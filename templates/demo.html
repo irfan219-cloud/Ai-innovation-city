@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meri Dharani 🇮🇳 - Transforming Waste Management</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulseMarker {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            50% { transform: scale(1.15); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .worker-marker {
+            animation: pulseMarker 3s infinite;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .waste-marker {
+            animation: pulseMarker 2s infinite;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .live-update {
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        .bg-pattern {
+            background-image: 
+                radial-gradient(circle at 25px 25px, rgba(59, 130, 246, 0.1) 2px, transparent 0),
+                radial-gradient(circle at 75px 75px, rgba(16, 185, 129, 0.1) 2px, transparent 0);
+            background-size: 100px 100px;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        .checkpoint-marker {
+            width: 12px;
+            height: 12px;
+            background: #fbbf24;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen bg-pattern">
+    
+    <!-- Header -->
+    <div class="bg-white shadow-lg border-b-2 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                        Meri Dharani 🇮🇳 - Transforming Waste Management
+                    </h1>
+                    <p class="text-lg text-gray-600">Point-to-Point Navigation with Realistic Stops</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Vijayawada, AP</div>
+                    <div class="flex items-center space-x-2">
+                        <div class="status-indicator w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="text-lg font-bold text-green-600">Navigation Ready</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        
+        <div class="grid lg:grid-cols-3 gap-8">
+            
+            <!-- Left Side - Route Map -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Navigation Status -->
+                <div id="navigationStatus" class="glass-effect p-4 rounded-2xl shadow-lg border-l-4 border-blue-500">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                        <span class="text-blue-700 font-medium">🧭 Ready for point-to-point navigation...</span>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div class="glass-effect rounded-3xl shadow-2xl overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">🗺️ Live Navigation Map</h3>
+                                <p class="text-sm text-gray-600">🛡️ CleanGuard • 🟡 Checkpoints • 🗑️ Waste Location</p>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-blue-100 px-3 py-1 rounded-full">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span class="text-blue-700 text-sm font-medium">Route Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-[500px] relative">
+                        <div id="map" class="w-full h-full"></div>
+                        <!-- Loading overlay -->
+                        <div id="mapLoading" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p class="text-gray-600">Loading navigation...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Details -->
+                <div class="glass-effect rounded-2xl shadow-lg p-6">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                        🛤️ Route Information
+                        <span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Live</span>
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600" id="routeDistance">...</div>
+                            <div class="text-xs text-blue-600">Distance</div>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="routeTime">...</div>
+                            <div class="text-xs text-green-600">Travel Time</div>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600" id="routeSteps">4</div>
+                            <div class="text-xs text-purple-600">Checkpoints</div>
+                        </div>
+                        <div class="bg-orange-50 p-3 rounded-lg">
+                            <div class="text-2xl font-bold text-orange-600" id="routeEarnings">₹350</div>
+                            <div class="text-xs text-orange-600">Job Value</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Journey Details -->
+            <div class="space-y-6">
+                
+                <!-- Worker Profile -->
+                <div class="glass-effect rounded-2xl shadow-lg">
+                    <div class="p-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-2xl">
+                        <h3 class="font-bold text-lg">🛡️ CleanGuard</h3>
+                        <p class="text-blue-100">Rajesh Kumar - ID: CG001</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                RK
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">Rajesh Kumar</div>
+                                <div class="text-sm text-gray-600">Municipal CleanGuard</div>
+                                <div class="text-xs text-green-600">⭐ 4.8/5 Rating • 127 Jobs</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Phone:</span><br>
+                                <span class="text-blue-600 font-medium">+91 98765 43210</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Vehicle:</span><br>
+                                <span class="text-purple-600 font-medium">Auto Rickshaw</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Equipment:</span><br>
+                                <span class="text-green-600 font-medium">Collection Tools</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">ETA:</span><br>
+                                <span class="text-orange-600 font-bold" id="etaTime">~24 seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Waste Location -->
+                <div class="glass-effect rounded-2xl shadow-lg">
+                    <div class="p-4 border-b bg-gradient-to-r from-red-600 to-red-700 text-white rounded-t-2xl">
+                        <h3 class="font-bold text-lg">🗑️ Waste Collection Point</h3>
+                        <p class="text-red-100">High Priority - Citizen Report</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white text-xl">
+                                🗑️
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">Gandhi Nagar Junction</div>
+                                <div class="text-sm text-gray-600">Overflowing waste bins</div>
+                                <div class="text-xs text-red-600">🚨 Urgent • Reported 2 hours ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-red-50 p-3 rounded-lg">
+                            <div class="text-sm space-y-1">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Waste Type:</span>
+                                    <span class="text-red-600 font-medium">Mixed Plastic</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Estimated Weight:</span>
+                                    <span class="text-red-600 font-medium">45-60 kg</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Payment:</span>
+                                    <span class="text-green-600 font-bold">₹350</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Citizen:</span>
+                                    <span class="text-blue-600 font-medium">Priya S.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button onclick="startPointToPointNavigation()" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 px-6 rounded-xl font-bold transition-all transform hover:scale-105">
+                                🚀 Start Point-to-Point Journey
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Status Updates -->
+                <div class="glass-effect rounded-2xl shadow-lg">
+                    <div class="p-4 border-b bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-2xl">
+                        <h3 class="font-bold text-lg">📊 Live Journey Updates</h3>
+                        <p class="text-green-100">Real-time checkpoint tracking</p>
+                    </div>
+                    <div class="p-6">
+                        <div id="liveUpdates" class="space-y-3 text-sm">
+                            <div class="flex items-center space-x-3 live-update">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span class="text-gray-600">Route with 4 checkpoints ready</span>
+                            </div>
+                            <div class="flex items-center space-x-3 live-update">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-gray-600">CleanGuard assigned to job</span>
+                            </div>
+                            <div class="flex items-center space-x-3 live-update">
+                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <span class="text-gray-600">Citizen notified of arrival time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapbox token
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2FrZXRoMjQyMSIsImEiOiJjbWVkYnFuY2gwOTE4MmtzZ3VhcGNsNWVjIn0.vJsyUnbBKBs9S1ZOO8kHKg';
+        
+        // MISSING VARIABLES - NOW DEFINED
+        let map = null;
+        let workerMarker = null;
+        let wasteMarker = null;
+        let routeCoordinates = []; 
+        let checkpointMarkers = []; // This was missing!
+        let navigationActive = false; // This was missing!
+        
+        // Location coordinates for Vijayawada (MISSING LOCATIONS)
+        const workerLocation = {
+            lat: 16.5062,
+            lng: 80.6480,
+            address: "Benz Circle, Vijayawada"
+        };
+        
+        const wasteLocation = {
+            lat: 16.5150,
+            lng: 80.6350,
+            address: "Gandhi Nagar Junction, Vijayawada"
+        };
+        
+        function calculateRealRoute() {
+            console.log('🔄 Starting route calculation...');
+            
+            try {
+                updateNavigationStatus('🔄 Calculating real route with roads...', 'loading');
+                
+                const start = [workerLocation.lng, workerLocation.lat];
+                const end = [wasteLocation.lng, wasteLocation.lat];
+                
+                console.log(`📍 Route from [${start}] to [${end}]`);
+                
+                // Use Mapbox Directions API for real navigation route
+                const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+                
+                console.log('🌐 Fetching real route from Mapbox Directions API...');
+                console.log('🔗 URL:', directionsUrl);
+                
+                fetch(directionsUrl)
+                    .then(response => {
+                        console.log('📡 Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📋 Directions API response:', data);
+                        
+                        if (data.routes && data.routes.length > 0) {
+                            const route = data.routes[0];
+                            routeCoordinates = route.geometry.coordinates;
+                            
+                            console.log(`✅ Got real route with ${routeCoordinates.length} coordinate points`);
+                            
+                            // Update route on map with real road path
+                            if (map.getSource('route')) {
+                                map.getSource('route').setData({
+                                    'type': 'Feature',
+                                    'properties': {},
+                                    'geometry': route.geometry
+                                });
+                                console.log('🗺️ Route data updated on map');
+                            } else {
+                                console.error('❌ Route source not found on map');
+                            }
+                            
+                            // Add checkpoint markers along the real route
+                            addCheckpointMarkersOnRoute();
+                            
+                            // Update route statistics
+                            const distance = (route.distance / 1000).toFixed(1);
+                            const duration = Math.ceil(route.duration / 60);
+                            
+                            document.getElementById('routeDistance').textContent = `${distance} km`;
+                            document.getElementById('routeTime').textContent = `${duration} min`;
+                            document.getElementById('etaTime').textContent = `~45 seconds`;
+                            
+                            // Fit map to show entire route
+                            const bounds = new mapboxgl.LngLatBounds();
+                            routeCoordinates.forEach(coord => bounds.extend(coord));
+                            
+                            map.fitBounds(bounds, {
+                                padding: 60,
+                                duration: 2000
+                            });
+                            
+                            updateNavigationStatus('✅ Real road route ready with checkpoints', 'success');
+                            addLiveUpdate('📍 Real navigation route calculated via roads');
+                            addLiveUpdate(`⏱️ Route distance: ${distance}km via actual roads`);
+                            
+                            console.log('🎉 Route calculation completed successfully!');
+                            
+                        } else {
+                            throw new Error('No route found in API response');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Route calculation error:', error);
+                        console.log('⚠️ Falling back to simple route');
+                        
+                        // Fallback to simple route
+                        const start = [workerLocation.lng, workerLocation.lat];
+                        const end = [wasteLocation.lng, wasteLocation.lat];
+                        
+                        routeCoordinates = [start, end];
+                        
+                        if (map.getSource('route')) {
+                            map.getSource('route').setData({
+                                'type': 'Feature',
+                                'properties': {},
+                                'geometry': {
+                                    'type': 'LineString',
+                                    'coordinates': [start, end]
+                                }
+                            });
+                        }
+                        
+                        addCheckpointMarkersOnRoute();
+                        
+                        const distance = calculateDistance(
+                            workerLocation.lat, workerLocation.lng,
+                            wasteLocation.lat, wasteLocation.lng
+                        ).toFixed(1);
+                        
+                        document.getElementById('routeDistance').textContent = `${distance} km`;
+                        document.getElementById('routeTime').textContent = `45s`;
+                        
+                        updateNavigationStatus('✅ Route ready (direct path fallback)', 'success');
+                        addLiveUpdate('⚠️ Using direct path (API unavailable)');
+                        
+                        console.log('📍 Fallback route created');
+                    });
+                    
+            } catch (error) {
+                console.error('❌ Route setup error:', error);
+                updateNavigationStatus('❌ Route setup failed: ' + error.message, 'error');
+            }
+        }
+        
+        function addCheckpointMarkersOnRoute() {
+            // Clear existing checkpoint markers
+            checkpointMarkers.forEach(marker => marker.remove());
+            checkpointMarkers = [];
+            
+            if (routeCoordinates.length < 4) {
+                console.log('⚠️ Not enough route points, using simple checkpoints');
+                addSimpleCheckpoints();
+                return;
+            }
+            
+            // Calculate checkpoint positions along the real route
+            const totalPoints = routeCoordinates.length;
+            const checkpointIndices = [
+                Math.floor(totalPoints * 0.25), // 25% along route
+                Math.floor(totalPoints * 0.5),  // 50% along route  
+                Math.floor(totalPoints * 0.75)  // 75% along route
+            ];
+            
+            console.log(`🟡 Adding checkpoints at route indices: ${checkpointIndices.join(', ')}`);
+            
+            checkpointIndices.forEach((index, checkpointNum) => {
+                if (index < routeCoordinates.length) {
+                    const position = routeCoordinates[index];
+                    
+                    const checkpointEl = document.createElement('div');
+                    checkpointEl.className = 'checkpoint-marker';
+                    
+                    const marker = new mapboxgl.Marker(checkpointEl)
+                        .setLngLat(position)
+                        .setPopup(new mapboxgl.Popup({ offset: 15 }).setHTML(`
+                            <div class="text-center p-2">
+                                <strong>Checkpoint ${checkpointNum + 1}</strong><br>
+                                <small class="text-gray-600">${(checkpointNum + 1) * 25}% along route</small><br>
+                                <small class="text-blue-600">3-second pause</small>
+                            </div>
+                        `))
+                        .addTo(map);
+                        
+                    checkpointMarkers.push(marker);
+                }
+            });
+            
+            console.log(`✅ Added ${checkpointMarkers.length} checkpoint markers along real route`);
+        }
+        
+        function addSimpleCheckpoints() {
+            const start = routeCoordinates[0];
+            const end = routeCoordinates[routeCoordinates.length - 1];
+            
+            const checkpoints = [
+                {
+                    position: [
+                        start[0] + (end[0] - start[0]) * 0.25,
+                        start[1] + (end[1] - start[1]) * 0.25
+                    ],
+                    label: "Checkpoint 1"
+                },
+                {
+                    position: [
+                        start[0] + (end[0] - start[0]) * 0.5,
+                        start[1] + (end[1] - start[1]) * 0.5
+                    ],
+                    label: "Checkpoint 2"
+                },
+                {
+                    position: [
+                        start[0] + (end[0] - start[0]) * 0.75,
+                        start[1] + (end[1] - start[1]) * 0.75
+                    ],
+                    label: "Checkpoint 3"
+                }
+            ];
+            
+            checkpoints.forEach((checkpoint, index) => {
+                const checkpointEl = document.createElement('div');
+                checkpointEl.className = 'checkpoint-marker';
+                
+                const marker = new mapboxgl.Marker(checkpointEl)
+                    .setLngLat(checkpoint.position)
+                    .setPopup(new mapboxgl.Popup({ offset: 15 }).setHTML(`
+                        <div class="text-center p-2">
+                            <strong>${checkpoint.label}</strong><br>
+                            <small class="text-gray-600">3-second stop</small>
+                        </div>
+                    `))
+                    .addTo(map);
+                    
+                checkpointMarkers.push(marker);
+            });
+        }
+
+        function initializeMap() {
+            console.log('🗺️ Initializing map...');
+            
+            if (!mapboxgl.accessToken) {
+                console.error('❌ Mapbox access token not set');
+                showError('Mapbox access token missing');
+                return;
+            }
+            
+            try {
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [workerLocation.lng, workerLocation.lat],
+                    zoom: 13,
+                    pitch: 0,
+                    bearing: 0
+                });
+                
+                console.log('🗺️ Map object created, waiting for load...');
+                
+                map.addControl(new mapboxgl.NavigationControl());
+                
+                map.on('load', function() {
+                    console.log('🗺️ Map loaded successfully');
+                    
+                    // Hide loading overlay
+                    const loadingEl = document.getElementById('mapLoading');
+                    if (loadingEl) {
+                        loadingEl.style.display = 'none';
+                    }
+                    
+                    // Add route source
+                    map.addSource('route', {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'Feature',
+                            'properties': {},
+                            'geometry': {
+                                'type': 'LineString',
+                                'coordinates': []
+                            }
+                        }
+                    });
+                    
+                    // Add route layer
+                    map.addLayer({
+                        'id': 'route',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        'paint': {
+                            'line-color': '#3b82f6',
+                            'line-width': 6,
+                            'line-opacity': 0.8
+                        }
+                    });
+                    
+                    console.log('🗺️ Map layers added, adding markers...');
+                    
+                    // Add markers and setup route
+                    addMarkers();
+                    
+                    // Small delay before calculating route
+                    setTimeout(() => {
+                        calculateRealRoute();
+                    }, 1000);
+                });
+                
+                map.on('error', function(e) {
+                    console.error('Map error:', e.error);
+                    showError('Map loading failed: ' + e.error.message);
+                });
+                
+                // Add timeout for map loading
+                setTimeout(() => {
+                    if (!map.loaded()) {
+                        console.error('❌ Map loading timeout');
+                        showError('Map loading timeout - please check your internet connection');
+                    }
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Map initialization error:', error);
+                showError('Unable to initialize map: ' + error.message);
+            }
+        }
+        
+        function addMarkers() {
+            console.log('📍 Adding markers to map...');
+            
+            // Worker marker (blue)
+            const workerEl = document.createElement('div');
+            workerEl.className = 'worker-marker';
+            workerEl.innerHTML = '🛡️';
+            workerEl.style.cssText = `
+                font-size: 28px;
+                width: 55px;
+                height: 55px;
+                background: #3b82f6;
+                border: 4px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+                z-index: 100;
+            `;
+            
+            workerMarker = new mapboxgl.Marker(workerEl)
+                .setLngLat([workerLocation.lng, workerLocation.lat])
+                .setPopup(new mapboxgl.Popup({ offset: 30 }).setHTML(`
+                    <div class="text-center p-3">
+                        <strong class="text-lg">CleanGuard Rajesh</strong><br>
+                        <small class="text-gray-600">Municipal Worker • 4.8⭐</small><br>
+                        <small class="text-blue-600">📍 Starting Point</small><br>
+                        <small class="text-green-600">Ready for journey</small>
+                    </div>
+                `))
+                .addTo(map);
+            
+            // Waste marker (red)
+            const wasteEl = document.createElement('div');
+            wasteEl.className = 'waste-marker';
+            wasteEl.innerHTML = '🗑️';
+            wasteEl.style.cssText = `
+                font-size: 28px;
+                width: 55px;
+                height: 55px;
+                background: #ef4444;
+                border: 4px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+                z-index: 100;
+            `;
+            
+            wasteMarker = new mapboxgl.Marker(wasteEl)
+                .setLngLat([wasteLocation.lng, wasteLocation.lat])
+                .setPopup(new mapboxgl.Popup({ offset: 30 }).setHTML(`
+                    <div class="text-center p-3">
+                        <div class="text-2xl mb-2">🗑️</div>
+                        <strong class="text-lg">Gandhi Nagar Junction</strong><br>
+                        <small class="text-gray-600">Mixed plastic waste</small><br>
+                        <small class="text-red-600">🚨 High Priority</small><br>
+                        <small class="text-green-600">₹350 collection fee</small>
+                    </div>
+                `))
+                .addTo(map);
+                
+            console.log('✅ Worker and waste markers added');
+        }
+        
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        function updateNavigationStatus(message, type) {
+            const statusEl = document.getElementById('navigationStatus');
+            const textEl = statusEl.querySelector('span');
+            const indicator = statusEl.querySelector('div');
+            
+            textEl.textContent = message;
+            
+            if (type === 'loading') {
+                statusEl.className = 'glass-effect p-4 rounded-2xl shadow-lg border-l-4 border-blue-500';
+                indicator.className = 'w-4 h-4 bg-blue-500 rounded-full animate-pulse';
+            } else if (type === 'success') {
+                statusEl.className = 'glass-effect p-4 rounded-2xl shadow-lg border-l-4 border-green-500';
+                indicator.className = 'w-4 h-4 bg-green-500 rounded-full';
+            } else if (type === 'error') {
+                statusEl.className = 'glass-effect p-4 rounded-2xl shadow-lg border-l-4 border-red-500';
+                indicator.className = 'w-4 h-4 bg-red-500 rounded-full';
+            }
+        }
+        
+        function addLiveUpdate(message) {
+            const updatesContainer = document.getElementById('liveUpdates');
+            const update = document.createElement('div');
+            update.className = 'flex items-center space-x-3 live-update';
+            update.innerHTML = `
+                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span class="text-gray-600">${message}</span>
+            `;
+            updatesContainer.appendChild(update);
+            
+            // Keep only last 6 updates
+            const updates = updatesContainer.children;
+            if (updates.length > 6) {
+                updatesContainer.removeChild(updates[0]);
+            }
+        }
+        
+        // MAIN POINT-TO-POINT NAVIGATION FUNCTION - GLOBAL ACCESS
+        window.startPointToPointNavigation = function startPointToPointNavigation() {
+            if (navigationActive) return;
+            
+            navigationActive = true;
+            const btn = document.querySelector('button[onclick="startPointToPointNavigation()"]');
+            btn.innerHTML = '🚀 Journey Started - Watch the Stops!';
+            btn.disabled = true;
+            btn.className = btn.className.replace('from-green-500 to-green-600', 'from-blue-500 to-blue-600');
+            
+            console.log('🚀 Starting point-to-point navigation');
+            
+            updateNavigationStatus('🚀 Journey started - Moving to first checkpoint!', 'success');
+            
+            // Change route color to green
+            map.setPaintProperty('route', 'line-color', '#10b981');
+            map.setPaintProperty('route', 'line-width', 8);
+            
+            // Start the point-to-point animation
+            animatePointToPointJourney();
+            
+            addLiveUpdate('🚀 CleanGuard started point-to-point journey');
+            showNotification('🚀 Watch the CleanGuard stop at each checkpoint!', 'success', 6000);
+        }
+        
+        function animatePointToPointJourney() {
+            if (!routeCoordinates || routeCoordinates.length < 2) {
+                console.error('❌ No route coordinates available for animation');
+                return;
+            }
+            
+            console.log(`🗺️ Starting journey along real route with ${routeCoordinates.length} points`);
+            
+            // Create waypoints along the actual route
+            const totalRoutePoints = routeCoordinates.length;
+            const waypointIndices = [
+                0, // Start
+                Math.floor(totalRoutePoints * 0.25), // 25%
+                Math.floor(totalRoutePoints * 0.5),  // 50%
+                Math.floor(totalRoutePoints * 0.75), // 75%
+                totalRoutePoints - 1 // End
+            ];
+            
+            const waypoints = waypointIndices.map(index => routeCoordinates[index]);
+            
+            console.log('🛤️ Created waypoints along real route:', waypoints.length);
+            
+            let currentWaypointIndex = 0;
+            
+            function moveToNextWaypoint() {
+                if (currentWaypointIndex >= waypoints.length - 1) {
+                    console.log('✅ Journey complete - arrived at destination!');
+                    
+                    // Final updates
+                    addLiveUpdate('✅ Destination reached via real roads!');
+                    updateNavigationStatus('✅ CleanGuard arrived - Starting waste collection!', 'success');
+                    
+                    const btn = document.querySelector('button[onclick="startPointToPointNavigation()"]');
+                    btn.innerHTML = '✅ Journey Complete - Waste Collection Started';
+                    btn.className = btn.className.replace('from-blue-500 to-blue-600', 'from-green-500 to-green-600');
+                    
+                    // Flash waste marker
+                    const wasteEl = wasteMarker.getElement();
+                    wasteEl.style.animation = 'pulseMarker 0.8s ease-in-out 4';
+                    
+                    return;
+                }
+                
+                const startWaypointIndex = waypointIndices[currentWaypointIndex];
+                const endWaypointIndex = waypointIndices[currentWaypointIndex + 1];
+                
+                console.log(`🚀 Moving along route from index ${startWaypointIndex} to ${endWaypointIndex}`);
+                
+                // Animate along the actual route segment
+                animateAlongRouteSegment(startWaypointIndex, endWaypointIndex, () => {
+                    currentWaypointIndex++;
+                    
+                    // Update progress
+                    const progress = (currentWaypointIndex / (waypoints.length - 1)) * 100;
+                    console.log(`📍 Reached waypoint ${currentWaypointIndex} - ${Math.round(progress)}% complete`);
+                    
+                    // Add specific live updates for each checkpoint
+                    if (currentWaypointIndex === 1) {
+                        addLiveUpdate('📍 Reached Checkpoint 1 - following real roads');
+                        updateNavigationStatus('📍 At Checkpoint 1 - pausing briefly...', 'success');
+                    } else if (currentWaypointIndex === 2) {
+                        addLiveUpdate('📍 Reached Checkpoint 2 - halfway via roads');
+                        updateNavigationStatus('📍 At Checkpoint 2 - following street path...', 'success');
+                    } else if (currentWaypointIndex === 3) {
+                        addLiveUpdate('📍 Reached Checkpoint 3 - nearly there');
+                        updateNavigationStatus('📍 At Checkpoint 3 - final road segment...', 'success');
+                    } else if (currentWaypointIndex === 4) {
+                        return; // Handled in completion check above
+                    }
+                    
+                    // Wait 4 seconds at each checkpoint (more realistic)
+                    console.log('⏸️ Pausing for 4 seconds at checkpoint...');
+                    setTimeout(() => {
+                        addLiveUpdate(`🚀 Continuing along route...`);
+                        moveToNextWaypoint();
+                    }, 4000);
+                });
+            }
+            
+            // Start the journey
+            moveToNextWaypoint();
+        }
+        
+        function animateAlongRouteSegment(startIndex, endIndex, onComplete) {
+            console.log(`🎬 Animating along route from index ${startIndex} to ${endIndex}`);
+            
+            // Get all the route points for this segment
+            const segmentPoints = routeCoordinates.slice(startIndex, endIndex + 1);
+            const totalSegmentPoints = segmentPoints.length;
+            
+            if (totalSegmentPoints < 2) {
+                console.log('⚠️ Segment too short, jumping to end');
+                workerMarker.setLngLat(routeCoordinates[endIndex]);
+                if (onComplete) onComplete();
+                return;
+            }
+            
+            let currentSegmentIndex = 0;
+            const stepDuration = 200; // 200ms per step - much slower!
+            
+            console.log(`📍 Will animate through ${totalSegmentPoints} route points`);
+            
+            const moveInterval = setInterval(() => {
+                if (currentSegmentIndex >= totalSegmentPoints - 1) {
+                    clearInterval(moveInterval);
+                    // Ensure exact final position
+                    workerMarker.setLngLat(routeCoordinates[endIndex]);
+                    console.log(`✅ Completed route segment to index ${endIndex}`);
+                    
+                    if (onComplete) {
+                        onComplete();
+                    }
+                    return;
+                }
+                
+                // Move to next point along the actual route
+                const currentPoint = segmentPoints[currentSegmentIndex];
+                workerMarker.setLngLat(currentPoint);
+                
+                // Log progress occasionally
+                if (currentSegmentIndex % 5 === 0) {
+                    console.log(`🔄 Route progress: ${currentSegmentIndex}/${totalSegmentPoints} points`);
+                }
+                
+                currentSegmentIndex++;
+            }, stepDuration);
+        }
+        
+        function showError(message) {
+            document.getElementById('mapLoading').innerHTML = `
+                <div class="text-center">
+                    <div class="text-red-500 text-4xl mb-4">⚠️</div>
+                    <p class="text-red-600 font-bold mb-2">Error</p>
+                    <p class="text-gray-600">${message}</p>
+                    <button onclick="window.location.reload()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                        🔄 Refresh
+                    </button>
+                </div>
+            `;
+        }
+        
+        function showNotification(message, type, duration = 4000) {
+            const toast = document.createElement('div');
+            let bgColor = 'bg-blue-500';
+            
+            if (type === 'success') bgColor = 'bg-green-500';
+            else if (type === 'warning') bgColor = 'bg-orange-500';
+            else if (type === 'error') bgColor = 'bg-red-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 transition-all transform translate-x-full max-w-sm`;
+            toast.innerHTML = message.replace(/\n/g, '<br>');
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🛡️ Point-to-Point Navigation Demo loaded');
+            
+            // Check if mapboxgl is loaded
+            if (typeof mapboxgl === 'undefined') {
+                console.error('❌ Mapbox GL JS library failed to load');
+                showError('Mapbox GL JS library failed to load');
+                return;
+            }
+            
+            console.log('✅ Mapbox GL JS loaded successfully');
+            
+            // Initialize map
+            initializeMap();
+            
+            // Test marker creation
+            setTimeout(() => {
+                console.log('🔍 Testing markers after map load...');
+                if (workerMarker && wasteMarker) {
+                    console.log('✅ All markers created successfully');
+                    console.log('🟡 Checkpoint markers:', checkpointMarkers.length);
+                } else {
+                    console.error('❌ Some markers failed to create');
+                }
+            }, 3000);
+        });
+        
+        console.log('✅ Point-to-Point Navigation system ready!');
+    </script>
+</body>
+</html>

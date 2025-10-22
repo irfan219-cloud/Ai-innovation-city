@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}CleanGuard Dashboard - {{ user.fullName }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Welcome Section -->
+    <div class="bg-white rounded-2xl shadow-md p-8 mb-8">
+        <h1 class="text-4xl font-bold text-blue-600 mb-4">
+            Welcome, {{ user.fullName }}! 🛡️
+        </h1>
+        <p class="text-xl text-gray-600">
+            CleanGuard Dashboard - Ready to serve!
+        </p>
+        <div class="mt-4">
+            <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
+                {{ user.workerProfile.organizationName | default('Independent Worker') }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <!-- Total Jobs -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Jobs Completed</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ user.workerProfile.totalJobsCompleted | default(0) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Rating -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Average Rating</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ user.workerProfile.averageRating | default(5) }}/5</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Earnings -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Total Earnings</p>
+                    <p class="text-2xl font-bold text-gray-800">₹{{ user.workerProfile.totalEarnings | default(0) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Info -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">👤 Profile Information</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-gray-600 text-sm">Email</p>
+                <p class="text-gray-800 font-medium">{{ user.email }}</p>
+            </div>
+            
+            <div>
+                <p class="text-gray-600 text-sm">Phone</p>
+                <p class="text-gray-800 font-medium">{{ user.phone | default('Not provided') }}</p>
+            </div>
+            
+            <div>
+                <p class="text-gray-600 text-sm">Location</p>
+                <p class="text-gray-800 font-medium">{{ user.location.city | default('Unknown') }}, {{ user.location.state | default('Unknown') }}</p>
+            </div>
+            
+            <div>
+                <p class="text-gray-600 text-sm">Worker Type</p>
+                <p class="text-gray-800 font-medium">{{ user.workerProfile.workerType | default('Independent') | replace('_', ' ') | title }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-6">⚡ Quick Actions</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <a href="/worker/jobs" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-lg text-center transition-colors">
+                <div class="text-blue-600 text-2xl mb-2">🔍</div>
+                <div class="font-semibold text-gray-800">Find Jobs</div>
+                <div class="text-sm text-gray-600">Browse available work</div>
+            </a>
+
+            <a href="/worker/profile" class="bg-green-50 hover:bg-green-100 p-4 rounded-lg text-center transition-colors">
+                <div class="text-green-600 text-2xl mb-2">👤</div>
+                <div class="font-semibold text-gray-800">My Profile</div>
+                <div class="text-sm text-gray-600">Update information</div>
+            </a>
+
+            <a href="/worker/earnings" class="bg-yellow-50 hover:bg-yellow-100 p-4 rounded-lg text-center transition-colors">
+                <div class="text-yellow-600 text-2xl mb-2">💰</div>
+                <div class="font-semibold text-gray-800">Earnings</div>
+                <div class="text-sm text-gray-600">Payment history</div>
+            </a>
+
+            <a href="/worker/help" class="bg-purple-50 hover:bg-purple-100 p-4 rounded-lg text-center transition-colors">
+                <div class="text-purple-600 text-2xl mb-2">❓</div>
+                <div class="font-semibold text-gray-800">Help</div>
+                <div class="text-sm text-gray-600">Get assistance</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Debug Console -->
+<script>
+console.log('✅ Dashboard loaded for:', '{{ user.fullName }}');
+console.log('🏢 Organization:', '{{ user.workerProfile.organizationName }}');
+console.log('📊 Jobs Completed:', '{{ user.workerProfile.totalJobsCompleted }}');
+console.log('⭐ Rating:', '{{ user.workerProfile.averageRating }}');
+</script>
+{% endblock %}

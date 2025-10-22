@@ -1,0 +1,1029 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Meri Dharani 🇮🇳{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-slate-50 via-brand-50 to-blue-50 min-h-screen{% endblock %}
+
+{% block navbar %}
+<nav class="bg-white/90 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-24">
+            <a href="/" class="flex items-center space-x-4 group">
+                <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-display font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                        Meri Dharani 🇮🇳
+                    </h1>
+                    <p class="text-sm text-gray-600 font-medium">मेरी पवित्र धरणी माँ</p>
+                </div>
+            </a>
+            
+            <a href="/" class="flex items-center space-x-2 text-gray-600 hover:text-brand-600 font-semibold transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                <span>Back to Login</span>
+            </a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block main_class %}flex-1 flex items-center justify-center p-4{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-5xl mx-auto">
+    
+    <!-- Registration Header -->
+    <div class="text-center mb-8 animate-fadeInUp">
+        <div class="inline-flex items-center px-4 py-2 bg-brand-100 text-brand-700 rounded-full text-sm font-semibold mb-4">
+            🌱 Join the Environmental Revolution
+        </div>
+        
+        <h2 class="text-4xl font-display font-bold text-gray-900 mb-4">
+            Create Your 
+            <span class="bg-gradient-to-r from-brand-500 to-emerald-500 bg-clip-text text-transparent">
+                EcoAccount
+            </span>
+        </h2>
+        
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Join thousands making our Mother Earth cleaner. Choose your role to get started.
+        </p>
+    </div>
+    
+    <!-- Step 1: Role Selection -->
+    <div id="role-selection" class="animate-fadeInUp">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Choose Your Role</h3>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                
+                <!-- EcoWarrior Card -->
+                <div class="role-card group cursor-pointer" data-role="citizen">
+                    <div class="p-6 border-2 border-gray-200 rounded-2xl hover:border-brand-500 hover:bg-brand-50 transition-all duration-300 group-hover:scale-105">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-2">🏠 EcoWarrior</h4>
+                            <p class="text-sm text-gray-600 mb-4">Citizens reporting waste and tracking environmental impact</p>
+                            <div class="text-xs text-green-600 font-semibold">• Report waste locations • Earn eco-points</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CleanGuard Card -->
+                <div class="role-card group cursor-pointer" data-role="worker">
+                    <div class="p-6 border-2 border-gray-200 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 group-hover:scale-105">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-2">🛡️ CleanGuard</h4>
+                            <p class="text-sm text-gray-600 mb-4">Professional waste collectors earning from cleanup</p>
+                            <div class="text-xs text-blue-600 font-semibold">• Earn ₹200-2000 per job • Flexible hours</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CityMaster Card -->
+                <div class="role-card group cursor-pointer" data-role="government">
+                    <div class="p-6 border-2 border-gray-200 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 group-hover:scale-105">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-2">👑 CityMaster</h4>
+                            <p class="text-sm text-gray-600 mb-4">Government officials managing city operations</p>
+                            <div class="text-xs text-purple-600 font-semibold">• Monitor city • Analytics & insights</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 2: Worker Type Selection (Only for CleanGuard) -->
+    <div id="worker-type-selection" class="hidden animate-fadeInUp">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Choose Your CleanGuard Specialization</h3>
+                <button id="back-to-roles" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="worker-types-container" class="space-y-4">
+                <!-- Worker types will be loaded dynamically -->
+            </div>
+            
+            <div class="text-center mt-6">
+                <button id="continue-to-form" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-2xl transition-all duration-200 disabled:opacity-50" disabled>
+                    Continue to Registration Form
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 3: Dynamic Registration Form -->
+    <div id="registration-form" class="hidden animate-fadeInUp">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="form-title" class="text-2xl font-bold text-gray-900">Complete Your Registration</h3>
+                <button id="back-to-selection" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="dynamic-form" class="space-y-8">
+                <div id="form-sections-container">
+                    <!-- Dynamic form sections will be loaded here -->
+                </div>
+                
+                <div class="pt-6 border-t border-gray-200">
+                    <button type="submit" id="submit-registration" class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 transform hover:scale-[1.02]">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div id="success-message" class="hidden animate-fadeInUp">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 text-center">
+            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Registration Successful! 🎉</h3>
+            <p class="text-gray-600 mb-6">Please verify your phone number to activate your account.</p>
+            
+            <div class="max-w-md mx-auto space-y-4">
+                <div class="text-center mb-4">
+                    <p class="text-gray-600 mb-3">Choose verification method:</p>
+                    <div class="flex space-x-3 justify-center">
+                        <button id="verify-phone-btn" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium border-2 border-blue-200 hover:bg-blue-200 transition-colors">
+                            📱 Phone OTP
+                        </button>
+                        <button id="verify-email-btn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium border-2 border-gray-200 hover:bg-gray-200 transition-colors">
+                            📧 Email OTP
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="verification-container">
+                    <div id="phone-verification" class="verification-method">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Enter OTP sent to your phone</label>
+                        <input type="text" id="phone-otp-input" maxlength="6" placeholder="123456" class="w-full px-4 py-3 text-center text-2xl font-bold bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-200">
+                    </div>
+                    
+                    <div id="email-verification" class="verification-method hidden">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Enter OTP sent to your email</label>
+                        <input type="text" id="email-otp-input" maxlength="6" placeholder="123456" class="w-full px-4 py-3 text-center text-2xl font-bold bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-200">
+                    </div>
+                </div>
+                
+                <button id="verify-otp" class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200">
+                    Verify & Continue
+                </button>
+                <button id="resend-otp" class="w-full text-brand-600 hover:text-brand-700 font-medium py-2 transition-colors duration-200">
+                    Resend OTP
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Registration state
+let registrationState = {
+    selectedRole: null,
+    selectedWorkerType: null,
+    formConfig: null,
+    formData: {},
+    locationOptions: null
+};
+
+console.log('🚀 Registration JavaScript loaded');
+
+// Initialize registration flow
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('📄 DOM loaded, initializing...');
+    
+    try {
+        // Load location options
+        await loadLocationOptions();
+        
+        // Setup role selection
+        setupRoleSelection();
+        
+        console.log('✅ Registration initialized successfully');
+    } catch (error) {
+        console.error('❌ Initialization failed:', error);
+        showFlashMessage('Failed to initialize registration form', 'error');
+    }
+});
+
+// Load location options from backend
+async function loadLocationOptions() {
+    try {
+        console.log('📍 Loading location options...');
+        const response = await apiCall('/api/auth/locations');
+        registrationState.locationOptions = response;
+        console.log('✅ Location options loaded:', response);
+    } catch (error) {
+        console.error('❌ Failed to load location options:', error);
+        // Fallback data
+        registrationState.locationOptions = {
+            states: ["Andhra Pradesh", "Telangana", "Karnataka", "Tamil Nadu"],
+            cities: {
+                "Andhra Pradesh": ["Yanamalakuduru", "Vijayawada", "Guntur"]
+            }
+        };
+    }
+}
+
+// Setup role selection handlers
+function setupRoleSelection() {
+    console.log('🎭 Setting up role selection...');
+    
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.addEventListener('click', function() {
+            console.log('🎯 Role card clicked:', this.dataset.role);
+            
+            const role = this.dataset.role;
+            registrationState.selectedRole = role;
+            
+            // Update UI
+            document.querySelectorAll('.role-card').forEach(c => {
+                c.querySelector('div').classList.remove('border-brand-500', 'bg-brand-50', 'border-blue-500', 'bg-blue-50', 'border-purple-500', 'bg-purple-50');
+                c.querySelector('div').classList.add('border-gray-200');
+            });
+            
+            // Highlight selected card
+            const cardDiv = this.querySelector('div');
+            cardDiv.classList.remove('border-gray-200');
+            if (role === 'citizen') {
+                cardDiv.classList.add('border-brand-500', 'bg-brand-50');
+            } else if (role === 'worker') {
+                cardDiv.classList.add('border-blue-500', 'bg-blue-50');
+            } else if (role === 'government') {
+                cardDiv.classList.add('border-purple-500', 'bg-purple-50');
+            }
+            
+            // Show next step
+            setTimeout(() => {
+                if (role === 'worker') {
+                    showWorkerTypeSelection();
+                } else {
+                    showRegistrationForm(role);
+                }
+            }, 300);
+        });
+    });
+}
+
+// Show worker type selection for CleanGuards
+async function showWorkerTypeSelection() {
+    try {
+        console.log('🛡️ Loading worker types...');
+        
+        // Load worker types from backend
+        const workerTypes = await apiCall('/api/auth/worker-types');
+        console.log('✅ Worker types loaded:', workerTypes);
+        
+        // Hide role selection, show worker type selection
+        document.getElementById('role-selection').classList.add('hidden');
+        document.getElementById('worker-type-selection').classList.remove('hidden');
+        
+        // Populate worker types
+        const container = document.getElementById('worker-types-container');
+        container.innerHTML = '';
+        
+        workerTypes.forEach(workerType => {
+            const typeCard = createWorkerTypeCard(workerType);
+            container.appendChild(typeCard);
+        });
+        
+        // Setup navigation
+        document.getElementById('back-to-roles').addEventListener('click', () => {
+            console.log('⬅️ Back to roles clicked');
+            document.getElementById('worker-type-selection').classList.add('hidden');
+            document.getElementById('role-selection').classList.remove('hidden');
+        });
+        
+        document.getElementById('continue-to-form').addEventListener('click', () => {
+            console.log('➡️ Continue to form clicked');
+            if (registrationState.selectedWorkerType) {
+                showRegistrationForm('worker', registrationState.selectedWorkerType);
+            } else {
+                showFlashMessage('Please select a worker type', 'warning');
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Failed to load worker types:', error);
+        showFlashMessage('Failed to load worker types', 'error');
+    }
+}
+
+// Create worker type card
+function createWorkerTypeCard(workerType) {
+    const card = document.createElement('div');
+    card.className = 'worker-type-card cursor-pointer';
+    card.dataset.typeId = workerType.typeId;
+    
+    card.innerHTML = `
+        <div class="p-4 border-2 border-gray-200 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-300">
+            <div class="flex items-center space-x-4">
+                <div class="text-2xl">${workerType.badge.split(' ')[0]}</div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-900 mb-1">${workerType.displayName}</h4>
+                    <p class="text-gray-600 text-sm mb-2">${workerType.description}</p>
+                    <div class="flex items-center space-x-4 text-sm">
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">${workerType.averageEarning}</span>
+                        <span class="text-gray-500">${workerType.priority} priority</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    card.addEventListener('click', function() {
+        console.log('🎯 Worker type selected:', workerType.typeId);
+        
+        // Remove previous selection
+        document.querySelectorAll('.worker-type-card').forEach(c => {
+            c.querySelector('div').classList.remove('border-blue-500', 'bg-blue-50');
+            c.querySelector('div').classList.add('border-gray-200');
+        });
+        
+        // Select this card
+        const cardDiv = this.querySelector('div');
+        cardDiv.classList.remove('border-gray-200');
+        cardDiv.classList.add('border-blue-500', 'bg-blue-50');
+        
+        // Update state
+        registrationState.selectedWorkerType = workerType.typeId;
+        
+        // Enable continue button
+        document.getElementById('continue-to-form').disabled = false;
+    });
+    
+    return card;
+}
+
+// Show registration form
+async function showRegistrationForm(role, workerType = null) {
+    try {
+        console.log('📝 Loading registration form for:', role, workerType);
+        
+        // Load form configuration from backend
+        let url = `/api/auth/form-config?role=${role}`;
+        if (workerType) {
+            url += `&type=${workerType}`;
+        }
+        
+        const formConfig = await apiCall(url);
+        registrationState.formConfig = formConfig;
+        console.log('✅ Form config loaded:', formConfig);
+        
+        // Hide previous steps
+        document.getElementById('role-selection').classList.add('hidden');
+        document.getElementById('worker-type-selection').classList.add('hidden');
+        
+        // Show form
+        document.getElementById('registration-form').classList.remove('hidden');
+        
+        // Update form title
+        const titles = {
+            'citizen': '🏠 Complete Your EcoWarrior Profile',
+            'worker': '🛡️ Complete Your CleanGuard Profile',
+            'government': '👑 Complete Your CityMaster Profile'
+        };
+        document.getElementById('form-title').textContent = titles[role];
+        
+        // Render dynamic form
+        renderDynamicForm(formConfig);
+        
+        // Setup navigation
+        document.getElementById('back-to-selection').addEventListener('click', () => {
+            console.log('⬅️ Back to selection clicked');
+            document.getElementById('registration-form').classList.add('hidden');
+            if (role === 'worker') {
+                document.getElementById('worker-type-selection').classList.remove('hidden');
+            } else {
+                document.getElementById('role-selection').classList.remove('hidden');
+            }
+        });
+        
+        // Setup form submission - THIS IS THE KEY FIX!
+        const form = document.getElementById('dynamic-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('📝 Form submitted!');
+            handleFormSubmission(e);
+        });
+        
+    } catch (error) {
+        console.error('❌ Failed to load form configuration:', error);
+        showFlashMessage('Failed to load form configuration', 'error');
+    }
+}
+
+// Render dynamic form based on configuration
+function renderDynamicForm(config) {
+    console.log('🎨 Rendering dynamic form...');
+    
+    const container = document.getElementById('form-sections-container');
+    container.innerHTML = '';
+    
+    config.formSections.forEach(section => {
+        const sectionDiv = createFormSection(section, config.formFields[section.fields]);
+        container.appendChild(sectionDiv);
+    });
+}
+
+// Create form section
+function createFormSection(section, fields) {
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'bg-gray-50 rounded-2xl p-6';
+    
+    // Section header
+    const header = document.createElement('div');
+    header.className = 'flex items-center space-x-3 mb-6';
+    header.innerHTML = `
+        <div class="text-2xl">${section.icon}</div>
+        <h4 class="text-lg font-bold text-gray-900">${section.title}</h4>
+    `;
+    sectionDiv.appendChild(header);
+    
+    // Form fields
+    const fieldsGrid = document.createElement('div');
+    fieldsGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+    
+    fields.forEach(field => {
+        const fieldDiv = createFormField(field);
+        if (field.type === 'textarea' || field.type === 'multiselect') {
+            fieldDiv.className = 'md:col-span-2';
+        }
+        fieldsGrid.appendChild(fieldDiv);
+    });
+    
+    sectionDiv.appendChild(fieldsGrid);
+    return sectionDiv;
+}
+
+// Create form field
+function createFormField(field) {
+    const fieldDiv = document.createElement('div');
+    
+    // Label
+    const label = document.createElement('label');
+    label.className = 'block text-sm font-semibold text-gray-700 mb-2';
+    label.textContent = field.label + (field.required ? ' *' : '');
+    
+    // Input element
+    let input;
+    
+    switch (field.type) {
+        case 'text':
+        case 'email':
+        case 'phone':
+        case 'password':
+        case 'number':
+            input = document.createElement('input');
+            input.type = field.type === 'phone' ? 'tel' : field.type;
+            input.className = 'w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-200';
+            if (field.placeholder) input.placeholder = field.placeholder;
+            if (field.min !== undefined) input.min = field.min;
+            if (field.max !== undefined) input.max = field.max;
+            break;
+            
+        case 'textarea':
+            input = document.createElement('textarea');
+            input.className = 'w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-200 resize-none';
+            input.rows = 3;
+            if (field.placeholder) input.placeholder = field.placeholder;
+            break;
+            
+        case 'select':
+            input = document.createElement('select');
+            input.className = 'w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all duration-200';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = `Select ${field.label}`;
+            input.appendChild(defaultOption);
+            
+            // Add options (use dynamic data if available)
+            let options = field.options || [];
+            if (field.field === 'state' && registrationState.locationOptions) {
+                options = registrationState.locationOptions.states;
+            } else if (field.field === 'city' && registrationState.locationOptions) {
+                // Will be populated when state is selected
+            }
+            
+            options.forEach(option => {
+                const optionEl = document.createElement('option');
+                optionEl.value = option;
+                optionEl.textContent = option;
+                input.appendChild(optionEl);
+            });
+            
+            // Handle state change for city population
+            if (field.field === 'state') {
+                input.addEventListener('change', function() {
+                    const citySelect = document.querySelector('select[name="city"]');
+                    if (citySelect && registrationState.locationOptions.cities[this.value]) {
+                        citySelect.innerHTML = '<option value="">Select City</option>';
+                        registrationState.locationOptions.cities[this.value].forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            citySelect.appendChild(option);
+                        });
+                    }
+                });
+            }
+            break;
+            
+        case 'multiselect':
+            input = document.createElement('div');
+            input.className = 'space-y-2';
+            
+            field.options?.forEach(option => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center space-x-3';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = option;
+                checkbox.name = field.field;
+                checkbox.className = 'w-4 h-4 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-brand-500';
+                
+                const checkboxLabel = document.createElement('label');
+                checkboxLabel.className = 'text-sm text-gray-700';
+                checkboxLabel.textContent = option;
+                
+                checkboxDiv.appendChild(checkbox);
+                checkboxDiv.appendChild(checkboxLabel);
+                input.appendChild(checkboxDiv);
+            });
+            break;
+    }
+    
+    // Set field attributes
+    if (input.tagName !== 'DIV') {
+        input.name = field.field;
+        input.required = field.required;
+    }
+    
+    fieldDiv.appendChild(label);
+    fieldDiv.appendChild(input);
+    
+    return fieldDiv;
+}
+
+// Handle form submission - FIXED VERSION
+async function handleFormSubmission(e) {
+    e.preventDefault();
+    console.log('📋 Starting form submission...');
+    
+    const submitBtn = document.getElementById('submit-registration');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+        <div class="flex items-center justify-center space-x-2">
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Creating Account...</span>
+        </div>
+    `;
+    
+    try {
+        // Collect form data
+        const formData = collectFormData();
+        console.log('📊 Form data collected:', formData);
+        
+        // Validate form data
+        if (!validateFormData(formData)) {
+            resetSubmitButton(submitBtn);
+            return;
+        }
+        
+        console.log('✅ Form validation passed');
+        
+        // Submit registration
+        const registrationData = {
+            role: registrationState.selectedRole,
+            workerType: registrationState.selectedWorkerType,
+            formData: formData
+        };
+        
+        console.log('🚀 Submitting registration:', registrationData);
+        
+        const response = await apiCall('/api/auth/register/dynamic', 'POST', registrationData);
+        console.log('✅ Registration response:', response);
+        
+        // Show success message
+        showFlashMessage(response.message, 'success');
+            
+        // Redirect to dashboard
+        setTimeout(() => {
+            window.location.href = response.dashboardUrl;
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Registration failed:', error);
+        
+        // Handle specific error types
+        let errorMessage = error.message || 'Registration failed';
+        let errorType = 'error';
+        
+        if (error.message.includes('already exists')) {
+            errorType = 'warning';
+            errorMessage = error.message;
+        } else if (error.message.includes('required')) {
+            errorType = 'error';
+            errorMessage = error.message;
+        } else if (error.message.includes('invalid')) {
+            errorType = 'error'; 
+            errorMessage = error.message;
+        }
+        
+        showFlashMessage(errorMessage, errorType);
+        resetSubmitButton(submitBtn);
+    }
+}
+
+// Collect form data
+function collectFormData() {
+    console.log('📝 Collecting form data...');
+    const formData = {};
+    
+    // Collect basic form inputs
+    document.querySelectorAll('#dynamic-form input, #dynamic-form select, #dynamic-form textarea').forEach(input => {
+        if (input.name && input.type !== 'checkbox') {
+            formData[input.name] = input.value;
+            console.log(`📄 Field ${input.name}: ${input.value}`);
+        }
+    });
+    
+    // Collect multiselect checkboxes
+    const checkboxGroups = {};
+    document.querySelectorAll('#dynamic-form input[type="checkbox"]').forEach(checkbox => {
+        if (checkbox.checked) {
+            if (!checkboxGroups[checkbox.name]) {
+                checkboxGroups[checkbox.name] = [];
+            }
+            checkboxGroups[checkbox.name].push(checkbox.value);
+        }
+    });
+    
+    // Merge checkbox data
+    Object.assign(formData, checkboxGroups);
+    
+    // Add role-specific data
+    formData.role = registrationState.selectedRole;
+    if (registrationState.selectedWorkerType) {
+        formData.workerType = registrationState.selectedWorkerType;
+    }
+    
+    // Add terms acceptance
+    formData.termsAccepted = true;
+    formData.privacyAccepted = true;
+    
+    console.log('📋 Final form data:', formData);
+    return formData;
+}
+
+// Validate form data
+function validateFormData(formData) {
+    console.log('🔍 Validating form data:', formData);
+    
+    // Clear any existing error messages
+    clearFieldErrors();
+    
+    let hasErrors = false;
+    
+    // Basic validation
+    const requiredFields = ['fullName', 'email', 'phone', 'password'];
+    
+    for (const field of requiredFields) {
+        console.log(`🔍 Checking field ${field}:`, formData[field]);
+        if (!formData[field] || formData[field].trim() === '') {
+            console.log(`❌ Field ${field} is missing or empty`);
+            showFieldError(field, `${getFieldLabel(field)} is required`);
+            hasErrors = true;
+        }
+    }
+    
+    // Email validation
+    if (formData.email && formData.email.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            console.log(`❌ Invalid email: ${formData.email}`);
+            showFieldError('email', 'Please enter a valid email address');
+            hasErrors = true;
+        }
+    }
+    
+    // Phone validation - make it more flexible for testing
+    if (formData.phone && formData.phone.trim()) {
+        // Accept various phone formats for testing
+        const phoneClean = formData.phone.replace(/\D/g, '');
+        if (phoneClean.length < 10) {
+            console.log(`❌ Invalid phone: ${formData.phone} (cleaned: ${phoneClean})`);
+            showFieldError('phone', 'Phone number must be at least 10 digits');
+            hasErrors = true;
+        }
+    }
+    
+    // Password validation
+    if (formData.password && formData.password.length > 0) {
+        if (formData.password.length < 6) {
+            console.log(`❌ Password too short: ${formData.password.length} characters`);
+            showFieldError('password', 'Password must be at least 6 characters long');
+            hasErrors = true;
+        }
+        // Removed strict password requirements for easier testing
+    }
+    
+    // Location validation - only if fields exist
+    const locationFields = ['state', 'city', 'address'];
+    locationFields.forEach(field => {
+        if (document.querySelector(`[name="${field}"]`)) {
+            if (!formData[field] || formData[field].trim() === '') {
+                console.log(`❌ Location field ${field} is missing`);
+                showFieldError(field, `Please ${field === 'state' ? 'select' : 'enter'} your ${field}`);
+                hasErrors = true;
+            }
+        }
+    });
+    
+    if (hasErrors) {
+        showFlashMessage('Please fix the errors highlighted in red below', 'error');
+        console.log('❌ Form validation failed - found errors');
+        return false;
+    }
+    
+    console.log('✅ Form validation passed');
+    return true;
+}
+
+// Helper function to get field labels
+function getFieldLabel(fieldName) {
+    const labels = {
+        'fullName': 'Full Name',
+        'email': 'Email Address',
+        'phone': 'Phone Number',
+        'password': 'Password',
+        'state': 'State',
+        'city': 'City',
+        'address': 'Address'
+    };
+    return labels[fieldName] || fieldName;
+}
+
+// Show field-specific error
+function showFieldError(fieldName, message) {
+    console.log(`🔴 Field error for ${fieldName}: ${message}`);
+    
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (!field) {
+        console.log(`❌ Field not found: ${fieldName}`);
+        // If field not found, show as flash message
+        showFlashMessage(message, 'error');
+        return;
+    }
+    
+    // Add error styling to field
+    field.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+    field.classList.remove('border-gray-200');
+    
+    // Find or create error message element
+    let errorElement = field.parentElement.querySelector('.field-error');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'field-error text-red-600 text-sm mt-1 flex items-center space-x-1';
+        field.parentElement.appendChild(errorElement);
+    }
+    
+    errorElement.innerHTML = `
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>${message}</span>
+    `;
+    
+    // Auto-remove error when user starts typing/changing
+    const removeError = function() {
+        clearFieldError(fieldName);
+        field.removeEventListener('input', removeError);
+        field.removeEventListener('change', removeError);
+    };
+    
+    field.addEventListener('input', removeError);
+    field.addEventListener('change', removeError);
+}
+
+// Clear field-specific error
+function clearFieldError(fieldName) {
+    const field = document.querySelector(`[name="${fieldName}"]`);
+    if (field) {
+        field.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+        field.classList.add('border-gray-200');
+        
+        const errorElement = field.parentElement.querySelector('.field-error');
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+}
+
+// Clear all field errors
+function clearFieldErrors() {
+    document.querySelectorAll('.field-error').forEach(error => error.remove());
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+        field.classList.add('border-gray-200');
+    });
+}
+
+// Show success message with OTP verification
+function showSuccessMessage(response) {
+    console.log('🎉 Showing success message...');
+    
+    document.getElementById('registration-form').classList.add('hidden');
+    document.getElementById('success-message').classList.remove('hidden');
+    
+    showFlashMessage(response.message, 'success');
+}
+
+// Auto-format phone number
+document.addEventListener('input', function(e) {
+    if (e.target.type === 'tel') {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Simple phone formatting
+        if (value.length > 0) {
+            if (value.startsWith('91')) {
+                value = value.substring(2);
+            } else if (value.startsWith('0')) {
+                value = value.substring(1);
+            }
+            
+            if (value.length <= 10) {
+                e.target.value = '+91-' + value;
+            }
+        }
+    }
+});
+
+// Enhanced API call function with detailed logging
+async function apiCall(url, method = 'GET', data = null) {
+    console.log(`🌐 API Call: ${method} ${url}`);
+    if (data) console.log('📤 Request data:', data);
+    
+    try {
+        const options = {
+            method: method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        };
+        
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+        
+        const response = await fetch(url, options);
+        console.log(`📡 Response status: ${response.status}`);
+        
+        // Handle different HTTP status codes
+        if (response.status === 409) {
+            // User already exists
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'User already exists');
+        } else if (response.status === 400) {
+            // Validation error
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Invalid input data');
+        } else if (response.status === 500) {
+            // Server error
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Server error occurred');
+        } else if (!response.ok) {
+            // Other errors
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('📥 Response data:', result);
+        return result;
+        
+    } catch (error) {
+        console.error('❌ API call failed:', error);
+        throw error;
+    }
+}
+
+// Helper function to reset submit button
+function resetSubmitButton(submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Create Account';
+}
+
+// IMPROVED FLASH MESSAGE FUNCTION
+// REPLACE YOUR EXISTING showFlashMessage FUNCTION IN register.html WITH THIS:
+// (No CSS changes needed - just fix the timeout bug!)
+
+function showFlashMessage(message, type = 'info') {
+    console.log(`💬 Flash message (${type}): ${message}`);
+    
+    const colors = {
+        'success': 'bg-green-50 border-green-200 text-green-800 border',
+        'error': 'bg-red-50 border-red-200 text-red-800 border',
+        'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800 border',
+        'info': 'bg-blue-50 border-blue-200 text-blue-800 border'
+    };
+    
+    const icons = {
+        'success': '✅',
+        'error': '❌', 
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    
+    // FIX: Calculate timeout properly
+    const timeout = type === 'warning' ? 8000 : 5000;
+    
+    const html = `
+        <div class="flash-message ${colors[type]} rounded-xl p-4 mb-4 shadow-lg animate-fadeInUp">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-lg">${icons[type]}</span>
+                    <span class="font-medium">${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const flashContainer = document.getElementById('flash-messages');
+    
+    // FIX: Add proper container check and logging
+    if (flashContainer) {
+        console.log("✅ Flash container found, adding message...");
+        flashContainer.insertAdjacentHTML('beforeend', html);
+        
+        // Auto-remove after timeout
+        setTimeout(() => {
+            const alerts = flashContainer.querySelectorAll('.flash-message');
+            if (alerts.length > 0) {
+                const firstAlert = alerts[0];
+                firstAlert.style.opacity = '0';
+                firstAlert.style.transform = 'translateY(-10px)';
+                setTimeout(() => firstAlert.remove(), 300);
+            }
+        }, timeout);
+        
+        // FIX: Scroll to show message if needed
+        flashContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+    } else {
+        console.error("❌ Flash container not found! Looking for #flash-messages");
+        // Fallback: Show alert if container missing
+        alert(`${icons[type]} ${message}`);
+    }
+}
+</script>
+{% endblock %}

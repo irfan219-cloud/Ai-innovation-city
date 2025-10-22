@@ -1,0 +1,97 @@
+<!-- templates/worker/earnings.html -->
+{% extends "base.html" %}
+
+{% block title %}My Earnings - CleanGuard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">💰 My Earnings</h1>
+        <p class="text-gray-600">Hello {{ user.fullName }}, here are your earnings</p>
+    </div>
+
+    <!-- Earnings Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Total Earnings -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-gray-500 text-sm">Total Earnings</h3>
+            <p class="text-3xl font-bold text-green-600">₹{{ earnings_data.total_earnings }}</p>
+            <p class="text-sm text-gray-400">{{ earnings_data.total_jobs }} jobs completed</p>
+        </div>
+
+        <!-- This Month -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-gray-500 text-sm">This Month</h3>
+            <p class="text-3xl font-bold text-blue-600">₹{{ earnings_data.this_month_earnings }}</p>
+        </div>
+
+        <!-- Pending Payment -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-gray-500 text-sm">Pending Payment</h3>
+            <p class="text-3xl font-bold text-orange-600">₹{{ earnings_data.pending_payment }}</p>
+        </div>
+    </div>
+
+    <!-- Recent Jobs -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold">Recent Jobs</h2>
+        </div>
+        <div class="p-6">
+            {% if recent_jobs %}
+                <div class="space-y-4">
+                    {% for job in recent_jobs %}
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded">
+                        <div>
+                            <p class="font-medium">{{ job.id }}</p>
+                            <p class="text-sm text-gray-600">{{ job.location }}</p>
+                            <p class="text-xs text-gray-400">{{ job.status }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-green-600">₹{{ job.earnings }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No recent jobs found</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-semibold">Payment History</h2>
+        </div>
+        <div class="p-6">
+            {% if payment_history %}
+                <div class="space-y-4">
+                    {% for payment in payment_history %}
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded">
+                        <div>
+                            <p class="font-medium">{{ payment.payment_id }}</p>
+                            <p class="text-sm text-gray-600">{{ payment.description }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold">₹{{ payment.amount }}</p>
+                            <p class="text-sm text-gray-400">{{ payment.status }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No payment history found</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6">
+        <a href="/worker/dashboard" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,920 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Meri Dharani 🇮🇳{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100 min-h-screen{% endblock %}
+
+{% block content %}
+<!-- Profile Content -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    {% if user %}
+    <!-- Profile Header with Edit Button -->
+    <div class="bg-white rounded-2xl shadow-md p-8 border border-slate-200 mb-8 relative">
+        <!-- Edit Profile Button -->
+        <button onclick="openEditModal()" class="absolute top-6 right-6 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            <span>Edit Profile</span>
+        </button>
+
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+            
+            <!-- Profile Picture -->
+            <div class="relative">
+                <div class="w-32 h-32 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                    {% if user.profilePicture %}
+                        <img src="{{ user.profilePicture }}" alt="Profile" class="w-full h-full rounded-full object-cover">
+                    {% else %}
+                        <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    {% endif %}
+                </div>
+                <button onclick="openImageUpload()" class="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Profile Info -->
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl font-bold text-slate-800 mb-2">{{ user.fullName }}</h1>
+                <p class="text-emerald-600 font-semibold text-lg mb-2">🏠 EcoWarrior</p>
+                <p class="text-slate-600 mb-1">📧 {{ user.email }}</p>
+                <p class="text-slate-600 mb-4">📱 {{ user.phone or 'Not provided' }}</p>
+                
+                <!-- Verification Status -->
+                <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
+                    {% if user.emailVerified %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            ✅ Email Verified
+                        </span>
+                    {% endif %}
+                    {% if user.phoneVerified %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ✅ Phone Verified
+                        </span>
+                    {% endif %}
+                    {% if user.isVerified %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            ✅ Account Verified
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Stats Row -->
+                <div class="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
+                    <div class="text-center">
+                        <div class="font-bold text-slate-800">{{ user.citizenProfile.totalReports or 0 }}</div>
+                        <div class="text-slate-500">Reports</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-emerald-600">{{ user.citizenProfile.totalPoints or 0 }}</div>
+                        <div class="text-slate-500">Eco Points</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-amber-600">{{ user.reputation or 5.0 }}</div>
+                        <div class="text-slate-500">Reputation</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-indigo-600 capitalize">{{ user.citizenProfile.level or 'Eco Rookie' }}</div>
+                        <div class="text-slate-500">Level</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Details Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Personal Information -->
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Personal Information
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Full Name</span>
+                    <span class="text-slate-800">{{ user.fullName }}</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Email</span>
+                    <span class="text-slate-800">{{ user.email }}</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Phone</span>
+                    <span class="text-slate-800">{{ user.phone or 'Not provided' }}</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Role</span>
+                    <span class="text-emerald-600 font-semibold">🏠 EcoWarrior</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Member Since</span>
+                    <span class="text-slate-800">{{ user.createdAt.strftime('%B %Y') if user.createdAt else 'Recently' }}</span>
+                </div>
+                <div class="flex justify-between py-3">
+                    <span class="text-slate-600 font-medium">Account Status</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        {% if user.isActive %}✅ Active{% else %}❌ Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Location Information -->
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Location Details
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">State</span>
+                    <span class="text-slate-800">{{ user.location.state or 'Not provided' }}</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">City</span>
+                    <span class="text-slate-800">{{ user.location.city or 'Not provided' }}</span>
+                </div>
+                <div class="flex justify-between py-3 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Pincode</span>
+                    <span class="text-slate-800">{{ user.location.pincode or 'Not provided' }}</span>
+                </div>
+                <div class="flex justify-between py-3">
+                    <span class="text-slate-600 font-medium">Address</span>
+                    <span class="text-slate-800 text-right">{{ user.location.address or 'Not provided' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EcoWarrior Preferences -->
+    <div class="mt-8 bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+        <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            EcoWarrior Preferences
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="text-2xl mb-2">🌐</div>
+                <div class="font-semibold text-slate-800">Language</div>
+                <div class="text-slate-600 text-sm">
+                    {% if user.citizenProfile.languagePreference == 'en' %}English
+                    {% elif user.citizenProfile.languagePreference == 'hi' %}हिंदी  
+                    {% elif user.citizenProfile.languagePreference == 'te' %}తెలుగు
+                    {% elif user.citizenProfile.languagePreference == 'ta' %}தமிழ்
+                    {% else %}English{% endif %}
+                </div>
+            </div>
+            <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="text-2xl mb-2">🔔</div>
+                <div class="font-semibold text-slate-800">Notifications</div>
+                <div class="text-slate-600 text-sm">
+                    {{ (user.citizenProfile.notificationPreferences or ['push', 'sms']) | join(', ') | title }}
+                </div>
+            </div>
+            <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="text-2xl mb-2">🏆</div>
+                <div class="font-semibold text-slate-800">Badges</div>
+                <div class="text-slate-600 text-sm">
+                    {{ (user.citizenProfile.badges or []) | length }} earned
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Summary -->
+    <div class="mt-8 bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+        <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Activity Summary
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center p-4 bg-slate-50 rounded-lg">
+                <div class="text-2xl font-bold text-slate-800">{{ user.citizenProfile.totalReports or 0 }}</div>
+                <div class="text-slate-600 text-sm">Service Requests</div>
+            </div>
+            <div class="text-center p-4 bg-emerald-50 rounded-lg">
+                <div class="text-2xl font-bold text-emerald-600">{{ user.citizenProfile.totalPoints or 0 }}</div>
+                <div class="text-slate-600 text-sm">Eco Points Earned</div>
+            </div>
+            <div class="text-center p-4 bg-amber-50 rounded-lg">
+                <div class="text-2xl font-bold text-amber-600">{{ user.reputation or 5.0 }}</div>
+                <div class="text-slate-600 text-sm">Reputation Score</div>
+            </div>
+            <div class="text-center p-4 bg-indigo-50 rounded-lg">
+                <div class="text-2xl font-bold text-indigo-600 capitalize">{{ user.citizenProfile.level or 'Rookie' }}</div>
+                <div class="text-slate-600 text-sm">Current Level</div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- User not found -->
+    <div class="bg-white rounded-2xl shadow-md p-8 border border-slate-200 text-center">
+        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+        <h2 class="text-xl font-bold text-slate-800 mb-2">Profile not found</h2>
+        <p class="text-slate-600 mb-4">Unable to load user profile data.</p>
+        <a href="/citizen/dashboard" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-gray-900">✏️ Edit Profile</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <form id="editProfileForm" class="space-y-8">
+                
+                <!-- Personal Information Section -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Personal Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="editFullName" name="fullName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Enter your full name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="editPhone" name="phone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="+91-9876543210">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location Section -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 616 0z"></path>
+                        </svg>
+                        Location Details
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                            <select id="editState" name="state" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                                <option value="">Select State</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                            <input type="text" id="editCity" name="city" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="Enter your city">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Pincode</label>
+                            <input type="text" id="editPincode" name="pincode" pattern="[0-9]{6}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" placeholder="521456">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Complete Address</label>
+                            <textarea id="editAddress" name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none" placeholder="House/Building number, street, landmark..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preferences Section -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        EcoWarrior Preferences
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Preferred Language</label>
+                            <select id="editLanguage" name="languagePreference" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                                <option value="en">🇺🇸 English</option>
+                                <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+                                <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+                                <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+                                <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Notification Preferences</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="notifyPush" name="notificationPreferences" value="push" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-gray-700">📱 Push Notifications</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="notifySMS" name="notificationPreferences" value="sms" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-gray-700">📱 SMS Notifications</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="notifyEmail" name="notificationPreferences" value="email" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                                    <span class="ml-2 text-sm text-gray-700">📧 Email Notifications</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="closeEditModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors">
+                        💾 Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Picture Upload Modal -->
+<div id="imageUploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900">📸 Update Profile Picture</h3>
+                <button onclick="closeImageUpload()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="text-center">
+                <div class="mb-4">
+                    <input type="file" id="profileImageInput" accept="image/*" class="hidden">
+                    <button onclick="document.getElementById('profileImageInput').click()" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-emerald-500 transition-colors">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <p class="text-gray-600">Click to select image</p>
+                        <p class="text-sm text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                    </button>
+                </div>
+                
+                <!-- Image Preview -->
+                <div id="imagePreview" class="hidden mb-4">
+                    <img id="previewImg" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-emerald-200">
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="closeImageUpload()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="uploadProfileImage()" id="uploadBtn" class="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50" disabled>
+                        Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Profile page JavaScript
+
+// Get current user data
+const currentUser = {
+    fullName: "{{ user.fullName if user else '' }}",
+    phone: "{{ user.phone if user else '' }}",
+    location: {
+        state: "{{ user.location.state if user and user.location else '' }}",
+        city: "{{ user.location.city if user and user.location else '' }}",
+        pincode: "{{ user.location.pincode if user and user.location else '' }}",
+        address: "{{ user.location.address if user and user.location else '' }}"
+    },
+    citizenProfile: {
+        languagePreference: "{{ user.citizenProfile.languagePreference if user and user.citizenProfile else 'en' }}",
+        //notificationPreferences: {{ (user.citizenProfile.notificationPreferences if user and user.citizenProfile and user.citizenProfile.notificationPreferences else ["push", "sms"]) | tojson | safe }}
+    }
+};
+
+console.log('👤 Current user data:', currentUser);
+
+// Modal functions
+function openEditModal() {
+    console.log('✏️ Opening edit modal...');
+    
+    // Populate form with current data
+    document.getElementById('editFullName').value = currentUser.fullName || '';
+    document.getElementById('editPhone').value = currentUser.phone || '';
+    document.getElementById('editState').value = currentUser.location.state || '';
+    document.getElementById('editCity').value = currentUser.location.city || '';
+    document.getElementById('editPincode').value = currentUser.location.pincode || '';
+    document.getElementById('editAddress').value = currentUser.location.address || '';
+    document.getElementById('editLanguage').value = currentUser.citizenProfile.languagePreference || 'en';
+    
+    // Set notification preferences
+    const notificationPrefs = currentUser.citizenProfile.notificationPreferences || ['push', 'sms'];
+    document.getElementById('notifyPush').checked = notificationPrefs.includes('push');
+    document.getElementById('notifySMS').checked = notificationPrefs.includes('sms');
+    document.getElementById('notifyEmail').checked = notificationPrefs.includes('email');
+    
+    document.getElementById('editProfileModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+    console.log('❌ Closing edit modal...');
+    document.getElementById('editProfileModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function openImageUpload() {
+    console.log('📸 Opening image upload modal...');
+    document.getElementById('imageUploadModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageUpload() {
+    console.log('❌ Closing image upload modal...');
+    document.getElementById('imageUploadModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    
+    // Reset form
+    document.getElementById('profileImageInput').value = '';
+    document.getElementById('imagePreview').classList.add('hidden');
+    document.getElementById('uploadBtn').disabled = true;
+}
+
+// Image preview function
+document.getElementById('profileImageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        console.log('📸 Image selected:', file.name);
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showFlashMessage('Please select a valid image file', 'error');
+            return;
+        }
+        
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            showFlashMessage('Image must be less than 5MB', 'error');
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imagePreview').classList.remove('hidden');
+            document.getElementById('uploadBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Profile form submission
+document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    console.log('🔄 PROFILE UPDATE: Starting submission...');
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+        <svg class="animate-spin w-4 h-4 mr-2 inline" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Saving Changes...
+    `;
+    
+    try {
+        // 🔥 ENHANCED FORM DATA COLLECTION
+        const formData = new FormData(e.target);
+        const updateData = {};
+        
+        // Collect basic fields with validation
+        const fullName = formData.get('fullName')?.trim();
+        if (fullName && fullName.length >= 2) {
+            updateData.fullName = fullName;
+        }
+        
+        const phone = formData.get('phone')?.trim();
+        if (phone) {
+            // Normalize phone format
+            const phoneDigits = phone.replace(/\D/g, '');
+            if (phoneDigits.length === 10) {
+                updateData.phone = `+91-${phoneDigits}`;
+            } else if (phoneDigits.length === 12 && phoneDigits.startsWith('91')) {
+                updateData.phone = `+91-${phoneDigits.substring(2)}`;
+            } else {
+                updateData.phone = phone; // Use as-is and let backend validate
+            }
+        }
+        
+        // Collect location data with validation
+        const locationData = {};
+        const state = formData.get('state')?.trim();
+        const city = formData.get('city')?.trim();
+        const pincode = formData.get('pincode')?.trim();
+        const address = formData.get('address')?.trim();
+        
+        if (state) locationData.state = state;
+        if (city) locationData.city = city;
+        if (pincode) locationData.pincode = pincode;
+        if (address) locationData.address = address;
+        
+        if (Object.keys(locationData).length > 0) {
+            updateData.location = locationData;
+        }
+        
+        // Collect citizen profile preferences
+        const citizenProfileData = {};
+        const languagePreference = formData.get('languagePreference');
+        if (languagePreference) {
+            citizenProfileData.languagePreference = languagePreference;
+        }
+        
+        // Collect notification preferences (checkboxes)
+        const notificationPrefs = [];
+        if (document.getElementById('notifyPush')?.checked) notificationPrefs.push('push');
+        if (document.getElementById('notifySMS')?.checked) notificationPrefs.push('sms');
+        if (document.getElementById('notifyEmail')?.checked) notificationPrefs.push('email');
+        
+        if (notificationPrefs.length > 0) {
+            citizenProfileData.notificationPreferences = notificationPrefs;
+        }
+        
+        if (Object.keys(citizenProfileData).length > 0) {
+            updateData.citizenProfile = citizenProfileData;
+        }
+        
+        console.log('📊 Collected update data:', updateData);
+        
+        // 🔥 VALIDATE BEFORE SENDING
+        if (Object.keys(updateData).length === 0) {
+            throw new Error('No changes detected. Please modify at least one field.');
+        }
+        
+        // 🔥 SEND API REQUEST WITH ENHANCED ERROR HANDLING
+        console.log('🌐 Sending API request...');
+        
+        const response = await fetch('/citizen/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        console.log(`📡 API Response status: ${response.status}`);
+        
+        const result = await response.json();
+        console.log('📥 API Response data:', result);
+        
+        if (response.ok && result.success) {
+            // ✅ SUCCESS
+            console.log('✅ Profile update successful');
+            
+            showFlashMessage(
+                `✅ ${result.message || 'Profile updated successfully!'}`, 
+                'success'
+            );
+            
+            // Show updated fields if provided
+            if (result.updatedFields && result.updatedFields.length > 0) {
+                console.log('📝 Updated fields:', result.updatedFields);
+            }
+            
+            // Add note if in demo mode
+            if (result.note) {
+                setTimeout(() => {
+                    showFlashMessage(`ℹ️ ${result.note}`, 'info');
+                }, 2000);
+            }
+            
+            closeEditModal();
+            
+            // Reload page after short delay to show changes
+            setTimeout(() => {
+                console.log('🔄 Reloading page to show updates...');
+                window.location.reload();
+            }, 1500);
+            
+        } else {
+            // ❌ API ERROR
+            console.error('❌ API Error:', result);
+            
+            const errorMessage = result.detail || result.message || 'Profile update failed';
+            
+            // Handle specific error types
+            if (response.status === 400) {
+                // Validation error
+                showFlashMessage(`❌ ${errorMessage}`, 'error');
+            } else if (response.status === 404) {
+                // User not found
+                showFlashMessage('❌ User not found. Please try logging in again.', 'error');
+            } else if (response.status === 500) {
+                // Server error
+                showFlashMessage('❌ Server error. Please try again in a moment.', 'error');
+            } else {
+                // Generic error
+                showFlashMessage(`❌ ${errorMessage}`, 'error');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Profile update error:', error);
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showFlashMessage('❌ Network error. Please check your internet connection.', 'error');
+        } else {
+            showFlashMessage(`❌ Error: ${error.message}`, 'error');
+        }
+        
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+// Profile image upload function
+// Enhanced profile image upload with better error handling
+async function uploadProfileImage() {
+    const fileInput = document.getElementById('profileImageInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showFlashMessage('❌ Please select an image first', 'error');
+        return;
+    }
+    
+    console.log('📸 PROFILE IMAGE: Starting upload...');
+    console.log('📄 File details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+    });
+    
+    const uploadBtn = document.getElementById('uploadBtn');
+    const originalText = uploadBtn.innerHTML;
+    
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = `
+        <svg class="animate-spin w-4 h-4 mr-2 inline" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Uploading...
+    `;
+    
+    try {
+        // 🔥 CLIENT-SIDE VALIDATION
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
+        }
+        
+        // Validate file size (5MB limit)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            throw new Error('File too large. Maximum size is 5MB.');
+        }
+        
+        console.log('✅ File validation passed');
+        
+        // 🔥 UPLOAD TO SERVER
+        const formData = new FormData();
+        formData.append('profileImage', file);
+        
+        console.log('🌐 Sending image upload request...');
+        
+        const response = await fetch('/citizen/profile/image', {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log(`📡 Upload response status: ${response.status}`);
+        
+        const result = await response.json();
+        console.log('📥 Upload response data:', result);
+        
+        if (response.ok && result.success) {
+            // ✅ SUCCESS
+            console.log('✅ Image upload successful');
+            
+            showFlashMessage(
+                `✅ ${result.message || 'Profile picture updated successfully!'}`, 
+                'success'
+            );
+            
+            // Show image URL if provided
+            if (result.imageUrl) {
+                console.log('🖼️ New image URL:', result.imageUrl);
+            }
+            
+            // Add note if in demo mode
+            if (result.note) {
+                setTimeout(() => {
+                    showFlashMessage(`ℹ️ ${result.note}`, 'info');
+                }, 2000);
+            }
+            
+            closeImageUpload();
+            
+            // Reload page to show new image
+            setTimeout(() => {
+                console.log('🔄 Reloading page to show new image...');
+                window.location.reload();
+            }, 1500);
+            
+        } else {
+            // ❌ API ERROR
+            console.error('❌ Image upload API error:', result);
+            
+            const errorMessage = result.detail || result.message || 'Image upload failed';
+            showFlashMessage(`❌ ${errorMessage}`, 'error');
+        }
+        
+    } catch (error) {
+        console.error('❌ Image upload error:', error);
+        showFlashMessage(`❌ ${error.message}`, 'error');
+        
+    } finally {
+        // Reset button state
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = originalText;
+    }
+}
+
+// Enhanced flash message function with better styling
+function showFlashMessage(message, type = 'info') {
+    console.log(`💬 Flash message (${type}): ${message}`);
+    
+    const colors = {
+        'success': 'bg-green-50 border-green-200 text-green-800 border-l-4 border-l-green-500',
+        'error': 'bg-red-50 border-red-200 text-red-800 border-l-4 border-l-red-500',
+        'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800 border-l-4 border-l-yellow-500',
+        'info': 'bg-blue-50 border-blue-200 text-blue-800 border-l-4 border-l-blue-500'
+    };
+    
+    const icons = {
+        'success': '✅',
+        'error': '❌', 
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    
+    const timeout = type === 'error' ? 8000 : 5000; // Errors stay longer
+    
+    const html = `
+        <div class="flash-message ${colors[type]} rounded-xl p-4 mb-4 shadow-lg animate-fadeInUp border">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xl">${icons[type]}</span>
+                    <span class="font-medium">${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const flashContainer = document.getElementById('flash-messages');
+    
+    if (flashContainer) {
+        flashContainer.insertAdjacentHTML('beforeend', html);
+        
+        // Auto-remove after timeout
+        setTimeout(() => {
+            const alerts = flashContainer.querySelectorAll('.flash-message');
+            if (alerts.length > 0) {
+                const firstAlert = alerts[0];
+                firstAlert.style.opacity = '0';
+                firstAlert.style.transform = 'translateY(-10px)';
+                setTimeout(() => firstAlert.remove(), 300);
+            }
+        }, timeout);
+        
+        // Scroll to show message
+        flashContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+    } else {
+        console.error("❌ Flash container not found!");
+        // Fallback: Show browser alert
+        alert(`${icons[type]} ${message}`);
+    }
+}
+
+// Phone number auto-formatting
+document.getElementById('editPhone')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    
+    // Handle different input formats
+    if (value.startsWith('91') && value.length > 2) {
+        value = value.substring(2); // Remove country code
+    }
+    
+    if (value.startsWith('0') && value.length > 1) {
+        value = value.substring(1); // Remove leading zero
+    }
+    
+    // Format as +91-XXXXXXXXXX
+    if (value.length <= 10) {
+        e.target.value = value ? `+91-${value}` : '';
+    }
+});
+
+// Form validation on input change
+document.querySelectorAll('#editProfileForm input, #editProfileForm select, #editProfileForm textarea').forEach(input => {
+    input.addEventListener('input', function() {
+        // Remove any existing error styling when user starts typing
+        this.classList.remove('border-red-500', 'ring-red-500');
+        this.classList.add('border-gray-300');
+        
+        // Remove field-specific error messages
+        const errorElement = this.parentElement.querySelector('.field-error');
+        if (errorElement) {
+            errorElement.remove();
+        }
+    });
+});
+
+// Close modals when clicking outside
+document.getElementById('editProfileModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+
+document.getElementById('imageUploadModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeImageUpload();
+    }
+});
+
+// Escape key to close modals
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditModal();
+        closeImageUpload();
+    }
+});
+
+console.log('✅ Profile page JavaScript loaded');
+</script>
+{% endblock %}

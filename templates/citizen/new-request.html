@@ -1,0 +1,1777 @@
+{% extends "base.html" %}
+
+{% block title %}New Request - Meri Dharani 🇮🇳{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100 min-h-screen{% endblock %}
+
+{% block extra_css %}
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Page Header -->
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
+            🌱 Report Waste • Live Camera • Smart Location
+        </div>
+        
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">
+            New Service Request
+        </h1>
+        
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Use live camera or upload images, auto-detect location, and let AI analyze your waste report
+        </p>
+    </div>
+    
+    <div class="grid lg:grid-cols-2 gap-8">
+        
+        <!-- Left Side - Form -->
+        <div class="space-y-6">
+            
+            <!-- 1. Image Capture/Upload Section -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">📸 Capture or Upload Images</h3>
+                        <p class="text-sm text-gray-600">Live camera or select from device (Max 10 images)</p>
+                    </div>
+                </div>
+                
+                <!-- Camera Mode -->
+                <div id="cameraMode" class="hidden">
+                    <video id="cameraPreview" class="w-full max-h-80 rounded-lg object-cover" autoplay muted playsinline></video>
+                    <canvas id="captureCanvas" class="hidden"></canvas>
+                    
+                    <div class="flex justify-center items-center gap-4 mt-4">
+                        <button onclick="stopCamera()" class="px-4 py-2 bg-gray-500 text-white rounded-full font-medium hover:bg-gray-600 transition-colors">
+                            ❌ Cancel
+                        </button>
+                        <button onclick="capturePhoto()" class="w-16 h-16 bg-red-500 text-white rounded-full text-2xl hover:bg-red-600 transition-colors flex items-center justify-center">
+                            📸
+                        </button>
+                        <button onclick="switchCamera()" id="switchBtn" class="px-4 py-2 bg-blue-500 text-white rounded-full font-medium hover:bg-blue-600 transition-colors">
+                            🔄 Flip
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Upload Mode -->
+                <div id="uploadMode">
+                    <!-- Upload Area -->
+                    <div id="uploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-4 cursor-pointer hover:border-green-400 hover:bg-green-50 transition-all duration-300"
+                         onclick="selectFromDevice()"
+                         ondrop="handleDrop(event)" 
+                         ondragover="handleDragOver(event)" 
+                         ondragleave="handleDragLeave(event)">
+                        <div class="space-y-4">
+                            <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-lg font-medium text-gray-700">Click to upload or drag & drop</p>
+                                <p class="text-sm text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <button onclick="startCamera()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0118.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>📱 Live Camera</span>
+                        </button>
+                        
+                        <button onclick="selectFromDevice()" class="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:border-gray-400 transition-colors font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"></path>
+                            </svg>
+                            <span>📁 Choose Files</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Hidden File Inputs -->
+                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden" onchange="handleFileSelect(event)">
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelect(event)">
+                </div>
+                
+                <!-- Image Preview with Scroll -->
+                <div id="imagePreview" class="hidden">
+                    <div class="max-h-48 overflow-y-auto">
+                        <div class="grid grid-cols-3 gap-4" id="imageGrid"></div>
+                    </div>
+                </div>
+                
+                <!-- Image Counter -->
+                <div id="imageCounter" class="text-sm text-gray-500 text-center mt-4 hidden">
+                    <span id="imageCount">0</span>/10 images uploaded
+                </div>
+            </div>
+            
+            <!-- 2. Location Section with Auto-Detection -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">📍 Waste Location</h3>
+                        <p class="text-sm text-gray-600">Auto-detecting your location...</p>
+                    </div>
+                </div>
+                
+                <!-- Location Status -->
+                <div id="locationStatus" class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="locationIndicator" class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                        <p class="text-sm text-blue-700 font-medium" id="locationText">
+                            📡 Detecting your location...
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Selected Location Details -->
+                <div id="selectedLocationDetails" class="hidden p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+                    <div class="text-sm">
+                        <div class="font-medium text-green-800 mb-1">📍 Selected Location:</div>
+                        <div class="text-green-700" id="locationCoordinates">-</div>
+                        <div class="text-green-600 text-xs" id="locationSource">-</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="currentLocationBtn" onclick="useCurrentLocation()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        </svg>
+                        <span>📍 Use Current Location</span>
+                    </button>
+                    
+                    <button onclick="selectOnMap()" class="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:border-gray-400 transition-colors font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        <span>🗺️ Select on Map</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 3. Description Section -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">✍️ Describe the Issue</h3>
+                        <p class="text-sm text-gray-600">Tell us about the waste (any language)</p>
+                    </div>
+                </div>
+                
+                <textarea 
+                    id="description" 
+                    placeholder="Describe the waste issue in any language - Hindi, English, Telugu, or mixed.&#10;&#10;Examples:&#10;• यहाँ बहुत कचरा है - plastic bottles और food waste&#10;• చెత్త బాగా వేసుకున్నారు, cleaning కావాలి&#10;• Lot of garbage near the park, needs immediate cleaning"
+                    class="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    oninput="updateCharCount(); validateForm()"
+                ></textarea>
+                
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        <span id="charCount">0</span>/500 characters
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm text-green-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        <span>💬 Multi-language supported</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 4. Expected Time & Worker Preferences -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">⏰ Expected Time & Worker Type</h3>
+                        <p class="text-sm text-gray-600">When do you need this cleaned?</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <!-- Expected Time -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expected Time</label>
+                        <select id="expectedTime" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="not_specified">Not specified</option>
+                            <option value="asap">ASAP (within 1 hour)</option>
+                            <option value="today">Today (within 6 hours)</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="this_week">This week</option>
+                            <option value="whenever">Whenever possible</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Worker Type Preference -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Worker Type</label>
+                        <select id="workerType" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="any">Any available worker</option>
+                            <option value="municipal">🏛️ Municipal Worker</option>
+                            <option value="ngo">🤝 NGO Volunteer</option>
+                            <option value="independent">💼 Independent Worker</option>
+                            <option value="corporate">🏢 Corporate Service</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Urgency Level -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="setUrgency('low')" id="urgencyLow" class="p-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 transition-colors">
+                            <div class="text-green-500 text-lg">🟢</div>
+                            <div class="text-xs font-medium">Low</div>
+                        </button>
+                        <button type="button" onclick="setUrgency('medium')" id="urgencyMedium" class="p-3 border border-blue-500 bg-blue-50 rounded-lg text-center transition-colors">
+                            <div class="text-blue-500 text-lg">🔵</div>
+                            <div class="text-xs font-medium text-blue-700">Medium</div>
+                        </button>
+                        <button type="button" onclick="setUrgency('high')" id="urgencyHigh" class="p-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 transition-colors">
+                            <div class="text-orange-500 text-lg">🟠</div>
+                            <div class="text-xs font-medium">High</div>
+                        </button>
+                        <button type="button" onclick="setUrgency('critical')" id="urgencyCritical" class="p-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 transition-colors">
+                            <div class="text-red-500 text-lg">🔴</div>
+                            <div class="text-xs font-medium">Critical</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 5. Submit Button -->
+            <button 
+                id="submitBtn" 
+                onclick="submitRequest()" 
+                disabled 
+                class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                <span id="submitText">🚀 Submit Request</span>
+            </button>
+        </div>
+        
+        <!-- Right Side - Map -->
+        <div class="space-y-6">
+            
+            <!-- Map Container -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">🗺️ Location Map</h3>
+                    <p class="text-sm text-gray-600">Map focused on your current location</p>
+                </div>
+                <div class="h-96">
+                    <div id="map" class="w-full h-full"></div>
+                </div>
+            </div>
+            
+            <!-- Status Progress -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">📋 Progress</h3>
+                        <p class="text-sm text-gray-600">Complete all steps to submit</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3" id="progressImages">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <span class="text-sm text-gray-600">📸 Add images</span>
+                    </div>
+                    <div class="flex items-center space-x-3" id="progressLocation">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <span class="text-sm text-gray-600">📍 Select location</span>
+                    </div>
+                    <div class="flex items-center space-x-3" id="progressDescription">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <span class="text-sm text-gray-600">✍️ Add description</span>
+                    </div>
+                    <div class="flex items-center space-x-3" id="progressSubmit">
+                        <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <span class="text-sm text-gray-600">🚀 Submit request</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<script>
+// Global Variables
+let uploadedImages = [];
+let currentLocation = null;
+let map = null;
+let locationMarker = null;
+let cameraStream = null;
+let currentFacingMode = 'environment';
+let selectedUrgency = 'medium';
+
+// Initialize Mapbox
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2FrZXRoMjQyMSIsImEiOiJjbWVkYnFuY2gwOTE4MmtzZ3VhcGNsNWVjIn0.vJsyUnbBKBs9S1ZOO8kHKg';
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🆕 Enhanced New Request page loaded');
+    
+    // Auto-detect location immediately
+    autoDetectLocation();
+    
+    // Initialize map
+    initializeMap();
+    
+    validateForm();
+});
+
+// ===== AUTO LOCATION DETECTION =====
+
+function autoDetectLocation() {
+    if (!navigator.geolocation) {
+        updateLocationStatus('❌ Location not supported on this device', 'error');
+        return;
+    }
+    
+    updateLocationStatus('📡 Getting your location...', 'loading');
+    
+    // Mobile-optimized geolocation options
+    const options = {
+        enableHighAccuracy: true,    // Use GPS on mobile
+        timeout: 30000,              // 30 seconds timeout for mobile
+        maximumAge: 300000           // 5 minutes cache for mobile
+    };
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const accuracy = position.coords.accuracy;
+            
+            setLocation(longitude, latitude, 'Auto-detected', accuracy);
+            updateLocationStatus(`✅ Location detected (±${Math.round(accuracy)}m)`, 'success');
+            
+            // Focus map on user location
+            if (map) {
+                map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 16, // Closer zoom for mobile
+                    duration: 2000
+                });
+            }
+            
+            console.log(`📱 Mobile location: ${latitude}, ${longitude} (±${accuracy}m)`);
+        },
+        (error) => {
+            console.error('📱 Mobile location error:', error);
+            let errorMsg = '';
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg = '❌ Location permission denied. Please enable location in browser settings.';
+                    // Show instructions for mobile
+                    setTimeout(() => {
+                        alert('📱 For mobile location:\n\n1. Allow location permission\n2. Enable location services in phone settings\n3. Refresh the page');
+                    }, 1000);
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg = '❌ Location unavailable. Please check GPS/WiFi.';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg = '❌ Location timeout. Trying again...';
+                    // Retry once for mobile
+                    setTimeout(() => autoDetectLocation(), 2000);
+                    return;
+                default:
+                    errorMsg = '❌ Location error. Please try "Use Current Location" button.';
+                    break;
+            }
+            updateLocationStatus(errorMsg, 'error');
+        },
+        options
+    );
+}
+
+// 1. Create Status Modal HTML (add to your new-request.html)
+function createStatusModal() {
+    const modalHTML = `
+    <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <div id="statusIcon" class="w-16 h-16 mx-auto mb-4">
+                    <!-- Dynamic icon based on status -->
+                </div>
+                <h3 id="statusTitle" class="text-xl font-bold text-gray-900">
+                    Processing Request...
+                </h3>
+                <p id="requestId" class="text-sm text-gray-500 mt-1">
+                    Request ID: --
+                </p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="progressBar" class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Status Messages -->
+            <div id="statusMessages" class="space-y-3 mb-6 max-h-32 overflow-y-auto">
+                <!-- Dynamic status messages appear here -->
+            </div>
+            
+            <!-- Action Buttons -->
+            <div id="statusActions" class="flex justify-center space-x-3">
+                <button id="cancelBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// 2. Status Display Manager
+class MithraStatusDisplay {
+    constructor() {
+        this.currentRequestId = null;
+        this.pollInterval = null;
+        this.statusHistory = [];
+        
+        // Create modal if not exists
+        if (!document.getElementById('statusModal')) {
+            createStatusModal();
+        }
+        
+        this.bindEvents();
+    }
+    
+    // Show status modal
+    showModal(requestId) {
+        this.currentRequestId = requestId;
+        this.statusHistory = [];
+        
+        const modal = document.getElementById('statusModal');
+        const requestIdSpan = document.getElementById('requestId');
+        
+        requestIdSpan.textContent = `Request ID: ${requestId}`;
+        modal.classList.remove('hidden');
+        
+        this.updateStatus({
+            status: 'processing',
+            message: '🤖 MITHRA: Starting analysis...',
+            progress: 10
+        });
+        
+        // Start polling for updates
+        this.startPolling();
+    }
+    
+    // Hide status modal
+    hideModal() {
+        const modal = document.getElementById('statusModal');
+        modal.classList.add('hidden');
+        this.stopPolling();
+    }
+    
+    // Update status display
+    updateStatus(statusData) {
+        const {
+            status = 'processing',
+            message = 'Processing...',
+            progress = 0,
+            suggestions = [],
+            final_insights = null
+        } = statusData;
+        
+        // Update progress bar
+        this.updateProgress(progress);
+        
+        // Add message to history
+        this.addStatusMessage(message, status);
+        
+        // Update icon and title based on status
+        this.updateStatusIcon(status);
+        
+        // Handle final states
+        if (status === 'completed') {
+            this.handleSuccess(final_insights);
+        } else if (['rejected', 'uncertain', 'no_waste', 'error'].includes(status)) {
+            this.handleFailure(status, message, suggestions);
+        }
+    }
+    
+    // Update progress bar
+    updateProgress(progress) {
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        
+        progressBar.style.width = `${progress}%`;
+        progressPercent.textContent = `${progress}%`;
+        
+        // Change color based on progress
+        if (progress >= 100) {
+            progressBar.className = 'bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-300';
+        }
+    }
+    
+    // Add status message to display
+    addStatusMessage(message, status) {
+        const messagesContainer = document.getElementById('statusMessages');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        const statusColor = {
+            'processing': 'text-blue-600',
+            'completed': 'text-green-600', 
+            'rejected': 'text-red-600',
+            'uncertain': 'text-yellow-600',
+            'error': 'text-red-600'
+        }[status] || 'text-gray-600';
+        
+        const messageHTML = `
+        <div class="flex items-start space-x-2 text-sm">
+            <span class="text-gray-400 text-xs mt-1">${timestamp}</span>
+            <span class="${statusColor} flex-1">${message}</span>
+        </div>`;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        this.statusHistory.push({ message, status, timestamp });
+    }
+    
+    // Update status icon
+    updateStatusIcon(status) {
+        const iconContainer = document.getElementById('statusIcon');
+        const titleElement = document.getElementById('statusTitle');
+        
+        const iconConfigs = {
+            'processing': {
+                icon: '🤖',
+                title: 'MITHRA AI Processing...',
+                bgColor: 'bg-blue-100',
+                textColor: 'text-blue-600'
+            },
+            'completed': {
+                icon: '✅',
+                title: 'Request Processed Successfully!',
+                bgColor: 'bg-green-100', 
+                textColor: 'text-green-600'
+            },
+            'rejected': {
+                icon: '❌',
+                title: 'Request Rejected',
+                bgColor: 'bg-red-100',
+                textColor: 'text-red-600'
+            },
+            'uncertain': {
+                icon: '⚠️',
+                title: 'Unable to Process',
+                bgColor: 'bg-yellow-100',
+                textColor: 'text-yellow-600'
+            },
+            'no_waste': {
+                icon: 'ℹ️',
+                title: 'No Waste Detected',
+                bgColor: 'bg-blue-100',
+                textColor: 'text-blue-600'
+            },
+            'error': {
+                icon: '❌',
+                title: 'Processing Error',
+                bgColor: 'bg-red-100',
+                textColor: 'text-red-600'
+            }
+        };
+        
+        const config = iconConfigs[status] || iconConfigs['processing'];
+        
+        iconContainer.innerHTML = `
+        <div class="w-16 h-16 ${config.bgColor} rounded-full flex items-center justify-center text-2xl">
+            ${config.icon}
+        </div>`;
+        
+        titleElement.textContent = config.title;
+        titleElement.className = `text-xl font-bold ${config.textColor}`;
+    }
+    
+    // Handle successful completion
+    handleSuccess(finalInsights) {
+        const actionsContainer = document.getElementById('statusActions');
+        
+        actionsContainer.innerHTML = `
+        <button onclick="mithraStatus.hideModal()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            ✅ Done
+        </button>
+        <button onclick="mithraStatus.viewDetails()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            📄 View Details
+        </button>`;
+        
+        this.stopPolling();
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+            this.hideModal();
+            // Redirect to dashboard or show success message
+            window.location.href = '/citizen/dashboard';
+        }, 5000);
+    }
+    
+    // Handle failure states
+    handleFailure(status, message, suggestions = []) {
+        const actionsContainer = document.getElementById('statusActions');
+        
+        let actionButtons = `
+        <button onclick="mithraStatus.hideModal()" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            Close
+        </button>`;
+        
+        if (status === 'uncertain' || status === 'no_waste') {
+            actionButtons += `
+            <button onclick="mithraStatus.retryRequest()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                🔄 Try Again
+            </button>`;
+        }
+        
+        actionsContainer.innerHTML = actionButtons;
+        
+        // Show suggestions if available
+        if (suggestions.length > 0) {
+            this.showSuggestions(suggestions);
+        }
+        
+        this.stopPolling();
+    }
+    
+    // Show suggestions
+    showSuggestions(suggestions) {
+        const messagesContainer = document.getElementById('statusMessages');
+        
+        const suggestionsHTML = `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
+            <h4 class="font-semibold text-yellow-800 mb-2">💡 Suggestions:</h4>
+            <ul class="space-y-1">
+                ${suggestions.map(suggestion => `
+                    <li class="text-sm text-yellow-700">• ${suggestion}</li>
+                `).join('')}
+            </ul>
+        </div>`;
+        
+        messagesContainer.insertAdjacentHTML('beforeend', suggestionsHTML);
+    }
+    
+    // Start polling for status updates
+    startPolling() {
+        if (!this.currentRequestId) return;
+        
+        this.pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/citizen/api/requests/${this.currentRequestId}/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.updateStatus(data.data);
+                }
+            } catch (error) {
+                console.error('Status polling error:', error);
+            }
+        }, 2000); // Poll every 2 seconds
+    }
+    
+    // Stop polling
+    stopPolling() {
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
+        }
+    }
+    
+    // Retry request
+    retryRequest() {
+        this.hideModal();
+        // Reset form or reload page
+        window.location.reload();
+    }
+    
+    // View details
+    viewDetails() {
+        this.hideModal();
+        window.location.href = `/citizen/requests/${this.currentRequestId}`;
+    }
+    
+    // Bind events
+    bindEvents() {
+        // Cancel button
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'cancelBtn') {
+                this.hideModal();
+            }
+        });
+        
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'statusModal') {
+                this.hideModal();
+            }
+        });
+    }
+}
+
+// Initialize status display
+const mithraStatus = new MithraStatusDisplay();
+
+// Modified submitRequest function
+async function submitRequest() {
+    if (!validateForm()) {
+        alert('❌ Please complete all required fields!');
+        return;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '🔄 Processing...';
+
+    try {
+        const requestData = {
+            description: document.getElementById('description').value.trim(),
+            images: uploadedImages,
+            location: currentLocation,
+            expected_time: document.getElementById('expectedTime').value || 'not_specified'
+        };
+
+        console.log('📤 Submitting request:', requestData);
+
+        const response = await fetch('/citizen/api/requests', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Request submitted successfully:', result);
+            
+            // Show status modal with real-time updates
+            mithraStatus.showModal(result.request_id);
+            
+            // Don't redirect immediately - let status modal handle it
+            
+        } else {
+            throw new Error(result.message || 'Failed to submit request');
+        }
+
+    } catch (error) {
+        console.error('❌ Submit error:', error);
+        alert(`❌ Failed to submit request: ${error.message}`);
+        
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+// 4. CSS Styles (add to your CSS file or in <style> tag)
+const statusModalStyles = `
+<style>
+#statusModal {
+    backdrop-filter: blur(4px);
+}
+
+#statusMessages::-webkit-scrollbar {
+    width: 4px;
+}
+
+#statusMessages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+#statusMessages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+}
+
+#statusMessages::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.status-message-enter {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>`;
+
+// Add styles to document
+document.head.insertAdjacentHTML('beforeend', statusModalStyles);
+
+function updateLocationStatus(message, type) {
+    const statusEl = document.getElementById('locationStatus');
+    const textEl = document.getElementById('locationText');
+    const indicator = document.getElementById('locationIndicator');
+    
+    textEl.textContent = message;
+    
+    // Update indicator based on type
+    if (type === 'loading') {
+        statusEl.className = 'p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4';
+        indicator.className = 'w-4 h-4 bg-blue-500 rounded-full animate-pulse';
+    } else if (type === 'success') {
+        statusEl.className = 'p-3 bg-green-50 border border-green-200 rounded-lg mb-4';
+        indicator.className = 'w-4 h-4 bg-green-500 rounded-full';
+    } else if (type === 'error') {
+        statusEl.className = 'p-3 bg-red-50 border border-red-200 rounded-lg mb-4';
+        indicator.className = 'w-4 h-4 bg-red-500 rounded-full';
+    }
+}
+
+// ===== MAP FUNCTIONS =====
+
+function initializeMap() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [80.5926, 16.5193], // Default to Vijayawada
+        zoom: 12
+    });
+    
+    map.addControl(new mapboxgl.NavigationControl());
+    
+    // Click event for selecting location on map
+    map.on('click', function(e) {
+        setLocation(e.lngLat.lng, e.lngLat.lat, 'Selected on map');
+        updateLocationStatus('✅ Location selected on map', 'success');
+    });
+}
+
+function setLocation(lng, lat, source, accuracy = null) {
+    currentLocation = { lng, lat, source, accuracy };
+    
+    // Remove existing marker
+    if (locationMarker) {
+        locationMarker.remove();
+    }
+    
+    // Add new marker
+    locationMarker = new mapboxgl.Marker({
+        color: '#ef4444',
+        scale: 1.5
+    })
+    .setLngLat([lng, lat])
+    .setPopup(new mapboxgl.Popup().setHTML(`
+        <div class="text-center">
+            <strong>📍 Waste Location</strong><br>
+            <small>Lat: ${lat.toFixed(6)}</small><br>
+            <small>Lng: ${lng.toFixed(6)}</small><br>
+            <small>Source: ${source}</small>
+            ${accuracy ? `<br><small>±${Math.round(accuracy)}m accuracy</small>` : ''}
+        </div>
+    `))
+    .addTo(map);
+    
+    // Show selected location details
+    const detailsEl = document.getElementById('selectedLocationDetails');
+    const coordinatesEl = document.getElementById('locationCoordinates');
+    const sourceEl = document.getElementById('locationSource');
+    
+    detailsEl.classList.remove('hidden');
+    coordinatesEl.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    sourceEl.textContent = `Source: ${source}${accuracy ? ` • ±${Math.round(accuracy)}m accuracy` : ''}`;
+    
+    validateForm();
+    updateProgress();
+    
+    console.log(`📍 Location set: ${lat.toFixed(6)}, ${lng.toFixed(6)} - ${source}`);
+}
+
+function useCurrentLocation() {
+    autoDetectLocation();
+}
+
+function selectOnMap() {
+    updateLocationStatus('🗺️ Click anywhere on the map to select location', 'loading');
+}
+
+// ===== CAMERA FUNCTIONS =====
+
+async function startCamera() {
+    try {
+        updateLocationStatus('📱 Starting camera...', 'loading');
+        
+        const constraints = {
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280, max: 1920 },
+                height: { ideal: 720, max: 1080 }
+            }
+        };
+        
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = cameraStream;
+        
+        // Switch to camera mode
+        document.getElementById('uploadMode').classList.add('hidden');
+        document.getElementById('cameraMode').classList.remove('hidden');
+        
+        console.log('📱 Camera started successfully');
+        
+    } catch (error) {
+        console.error('❌ Camera error:', error);
+        alert('❌ Camera access failed. Please allow camera permission and try again.');
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    
+    // Switch back to upload mode
+    document.getElementById('cameraMode').classList.add('hidden');
+    document.getElementById('uploadMode').classList.remove('hidden');
+    
+    console.log('📱 Camera stopped');
+}
+
+function switchCamera() {
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    stopCamera();
+    startCamera();
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('captureCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size to video size
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+    
+    // Convert to blob and add to images
+    canvas.toBlob((blob) => {
+        const timestamp = Date.now();
+        const filename = `camera_capture_${timestamp}.jpg`;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImages.push({
+                file: blob,
+                dataUrl: e.target.result,
+                name: filename,
+                size: blob.size,
+                source: 'camera'
+            });
+            
+            displayImagePreview();
+            validateForm();
+            updateProgress();
+            
+            console.log(`📸 Photo captured: ${filename}`);
+        };
+        reader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.8);
+    
+    // Stop camera after capture
+    stopCamera();
+}
+
+// ===== IMAGE UPLOAD FUNCTIONS =====
+
+function selectFromDevice() {
+    document.getElementById('fileInput').click();
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.add('border-green-400', 'bg-green-50');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.remove('border-green-400', 'bg-green-50');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.remove('border-green-400', 'bg-green-50');
+    
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+}
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    handleFiles(files);
+}
+
+function handleFiles(files) {
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+        alert('❌ Please select only image files!');
+        return;
+    }
+    
+    if (uploadedImages.length + imageFiles.length > 10) {
+        alert('📸 Maximum 10 images allowed. Please remove some images first.');
+        return;
+    }
+
+    imageFiles.forEach(file => {
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`❌ File "${file.name}" is too large. Maximum 5MB per image.`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImages.push({
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name,
+                size: file.size,
+                source: 'upload'
+            });
+            
+            displayImagePreview();
+            validateForm();
+            updateProgress();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function displayImagePreview() {
+    const previewContainer = document.getElementById('imagePreview');
+    const imageGrid = document.getElementById('imageGrid');
+    const imageCounter = document.getElementById('imageCounter');
+    const imageCount = document.getElementById('imageCount');
+    
+    if (uploadedImages.length > 0) {
+        previewContainer.classList.remove('hidden');
+        imageCounter.classList.remove('hidden');
+        imageCount.textContent = uploadedImages.length;
+        
+        imageGrid.innerHTML = uploadedImages.map((image, index) => `
+            <div class="relative">
+                <img src="${image.dataUrl}" alt="Preview ${index + 1}" class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                <button onclick="removeImage(${index})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600 transition-colors">×</button>
+                ${image.source === 'camera' ? '<div class="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">📱</div>' : ''}
+            </div>
+        `).join('');
+    } else {
+        previewContainer.classList.add('hidden');
+        imageCounter.classList.add('hidden');
+    }
+}
+
+function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    displayImagePreview();
+    validateForm();
+    updateProgress();
+}
+
+// ===== FORM FUNCTIONS =====
+
+function updateCharCount() {
+    const textarea = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+    const count = textarea.value.length;
+    
+    charCount.textContent = count;
+    
+    if (count > 500) {
+        charCount.className = 'text-red-500';
+        textarea.value = textarea.value.substring(0, 500);
+        charCount.textContent = '500';
+    } else {
+        charCount.className = 'text-gray-500';
+    }
+}
+
+function setUrgency(level) {
+    selectedUrgency = level;
+    
+    // Reset all buttons
+    ['low', 'medium', 'high', 'critical'].forEach(urgency => {
+        const btn = document.getElementById(`urgency${urgency.charAt(0).toUpperCase() + urgency.slice(1)}`);
+        btn.className = 'p-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 transition-colors';
+    });
+    
+    // Highlight selected button
+    const selectedBtn = document.getElementById(`urgency${level.charAt(0).toUpperCase() + level.slice(1)}`);
+    const colors = {
+        low: 'border-green-500 bg-green-50',
+        medium: 'border-blue-500 bg-blue-50', 
+        high: 'border-orange-500 bg-orange-50',
+        critical: 'border-red-500 bg-red-50'
+    };
+    selectedBtn.className = `p-3 border ${colors[level]} rounded-lg text-center transition-colors`;
+    
+    validateForm();
+}
+
+function validateForm() {
+    const description = document.getElementById('description').value.trim();
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    
+    const hasImages = uploadedImages.length > 0;
+    const hasDescription = description.length >= 10;
+    const hasLocation = currentLocation !== null;
+    
+    // Update submit button
+    if (!hasImages) {
+        submitBtn.disabled = true;
+        submitText.textContent = '📸 Add Images First';
+    } else if (!hasLocation) {
+        submitBtn.disabled = true;
+        submitText.textContent = '📍 Select Location';
+    } else if (!hasDescription) {
+        submitBtn.disabled = true;
+        submitText.textContent = '✍️ Add Description (min 10 chars)';
+    } else {
+        submitBtn.disabled = false;
+        submitText.textContent = '🚀 Submit Request';
+    }
+    
+    return hasImages && hasDescription && hasLocation;
+}
+
+function updateProgress() {
+    const description = document.getElementById('description').value.trim();
+    
+    const hasImages = uploadedImages.length > 0;
+    const hasDescription = description.length >= 10;
+    const hasLocation = currentLocation !== null;
+    
+    // Update progress indicators
+    updateProgressItem('progressImages', hasImages, `📸 ${uploadedImages.length} images added`, '📸 Add images');
+    updateProgressItem('progressLocation', hasLocation, '✅ Location selected', '📍 Select location');
+    updateProgressItem('progressDescription', hasDescription, '✅ Description added', '✍️ Add description');
+    
+    const allComplete = hasImages && hasLocation && hasDescription;
+    updateProgressItem('progressSubmit', allComplete, '🚀 Ready to submit!', '🚀 Submit request');
+}
+
+function updateProgressItem(elementId, completed, completedText, pendingText) {
+    const element = document.getElementById(elementId);
+    const circle = element.querySelector('.w-3');
+    const text = element.querySelector('span');
+    
+    if (completed) {
+        circle.className = 'w-3 h-3 bg-green-500 rounded-full';
+        text.className = 'text-sm text-green-600 font-medium';
+        text.textContent = completedText;
+    } else {
+        circle.className = 'w-3 h-3 bg-gray-300 rounded-full';
+        text.className = 'text-sm text-gray-600';
+        text.textContent = pendingText;
+    }
+}
+
+// ===== SUBMIT FUNCTION =====
+
+function submitRequest() {
+    if (!validateForm()) {
+        alert('❌ Please complete all required fields!');
+        return;
+    }
+    
+    const description = document.getElementById('description').value.trim();
+    const expectedTime = document.getElementById('expectedTime').value;
+    const workerType = document.getElementById('workerType').value;
+    
+    // Generate unique request ID
+    const timestamp = Date.now();
+    const requestId = 'REQ-' + timestamp + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    
+    // Prepare request data
+    const requestData = {
+        request_id: requestId,
+        user_id: "{{ user._id if user else 'demo_user' }}",
+        description: description,
+        images: uploadedImages.map(img => ({
+            name: img.name,
+            size: img.size,
+            dataUrl: img.dataUrl,
+            source: img.source
+        })),
+        location: {
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+            source: currentLocation.source,
+            accuracy: currentLocation.accuracy
+        },
+        expected_time: expectedTime,
+        worker_preferences: {
+            type: workerType,
+            specialization: 'general'
+        },
+        urgency: selectedUrgency,
+        timestamp: new Date().toISOString(),
+        language_preference: 'en'
+    };
+    
+    console.log('🚀 Submitting request:', requestData);
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    
+    submitBtn.disabled = true;
+    submitText.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Submitting...';
+    
+    // Submit to backend
+    fetch('/citizen/api/requests', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(`✅ Success! Request ${result.requestId} submitted successfully!\n\n🤖 AI analysis starting...\n📱 You'll receive updates via notifications.`);
+            
+            // Reset form
+            resetForm();
+            
+            // Optional: Redirect to requests page
+            // window.location.href = '/citizen/requests';
+        } else {
+            alert(`❌ Error: ${result.message || 'Unknown error occurred'}`);
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitText.textContent = '🚀 Submit Request';
+        }
+    })
+    .catch(error => {
+        console.error('❌ Submit error:', error);
+        alert('❌ Network error. Please check your connection and try again.');
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitText.textContent = '🚀 Submit Request';
+    });
+}
+
+function resetForm() {
+    // Clear images
+    uploadedImages = [];
+    displayImagePreview();
+    
+    // Clear description
+    document.getElementById('description').value = '';
+    document.getElementById('charCount').textContent = '0';
+    
+    // Reset form fields
+    document.getElementById('expectedTime').value = 'not_specified';
+    document.getElementById('workerType').value = 'any';
+    setUrgency('medium');
+    
+    // Keep location for convenience (user might report multiple issues from same area)
+    
+    // Reset submit button
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    submitBtn.disabled = true;
+    submitText.textContent = '🚀 Submit Request';
+    
+    // Update progress
+    updateProgress();
+    validateForm();
+    
+    console.log('✨ Form reset successfully');
+}
+
+// Initialize everything when page loads
+console.log('🆕 Enhanced New Request JavaScript loaded successfully!');
+
+// ===== CAMERA FUNCTIONS =====
+
+async function startCamera() {
+    try {
+        updateLocationStatus('📱 Starting camera...', 'loading');
+        
+        const constraints = {
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280, max: 1920 },
+                height: { ideal: 720, max: 1080 }
+            }
+        };
+        
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = cameraStream;
+        
+        // Switch to camera mode
+        document.getElementById('uploadMode').classList.add('hidden');
+        document.getElementById('cameraMode').classList.remove('hidden');
+        
+        console.log('📱 Camera started successfully');
+        
+    } catch (error) {
+        console.error('❌ Camera error:', error);
+        alert('❌ Camera access failed. Please allow camera permission and try again.');
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    
+    // Switch back to upload mode
+    document.getElementById('cameraMode').classList.add('hidden');
+    document.getElementById('uploadMode').classList.remove('hidden');
+    
+    console.log('📱 Camera stopped');
+}
+
+function switchCamera() {
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    stopCamera();
+    startCamera();
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('captureCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size to video size
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+    
+    // Convert to blob and add to images
+    canvas.toBlob((blob) => {
+        const timestamp = Date.now();
+        const filename = `camera_capture_${timestamp}.jpg`;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImages.push({
+                file: blob,
+                dataUrl: e.target.result,
+                name: filename,
+                size: blob.size,
+                source: 'camera'
+            });
+            
+            displayImagePreview();
+            validateForm();
+            updateProgress();
+            
+            console.log(`📸 Photo captured: ${filename}`);
+        };
+        reader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.8);
+    
+    // Stop camera after capture
+    stopCamera();
+}
+
+// ===== IMAGE UPLOAD FUNCTIONS =====
+
+function selectFromDevice() {
+    document.getElementById('fileInput').click();
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.add('border-green-400', 'bg-green-50');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.remove('border-green-400', 'bg-green-50');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.classList.remove('border-green-400', 'bg-green-50');
+    
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+}
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    handleFiles(files);
+}
+
+function handleFiles(files) {
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+        alert('❌ Please select only image files!');
+        return;
+    }
+    
+    if (uploadedImages.length + imageFiles.length > 10) {
+        alert('📸 Maximum 10 images allowed. Please remove some images first.');
+        return;
+    }
+
+    imageFiles.forEach(file => {
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`❌ File "${file.name}" is too large. Maximum 5MB per image.`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImages.push({
+                file: file,
+                dataUrl: e.target.result,
+                name: file.name,
+                size: file.size,
+                source: 'upload'
+            });
+            
+            displayImagePreview();
+            validateForm();
+            updateProgress();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function displayImagePreview() {
+    const previewContainer = document.getElementById('imagePreview');
+    const imageGrid = document.getElementById('imageGrid');
+    const imageCounter = document.getElementById('imageCounter');
+    const imageCount = document.getElementById('imageCount');
+    
+    if (uploadedImages.length > 0) {
+        previewContainer.classList.remove('hidden');
+        imageCounter.classList.remove('hidden');
+        imageCount.textContent = uploadedImages.length;
+        
+        imageGrid.innerHTML = uploadedImages.map((image, index) => `
+            <div class="relative">
+                <img src="${image.dataUrl}" alt="Preview ${index + 1}" class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                <button onclick="removeImage(${index})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600 transition-colors">×</button>
+                ${image.source === 'camera' ? '<div class="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">📱</div>' : ''}
+            </div>
+        `).join('');
+    } else {
+        previewContainer.classList.add('hidden');
+        imageCounter.classList.add('hidden');
+    }
+}
+
+function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    displayImagePreview();
+    validateForm();
+    updateProgress();
+}
+
+// ===== FORM FUNCTIONS =====
+
+function updateCharCount() {
+    const textarea = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+    const count = textarea.value.length;
+    
+    charCount.textContent = count;
+    
+    if (count > 500) {
+        charCount.className = 'text-red-500';
+        textarea.value = textarea.value.substring(0, 500);
+        charCount.textContent = '500';
+    } else {
+        charCount.className = 'text-gray-500';
+    }
+}
+
+function setUrgency(level) {
+    selectedUrgency = level;
+    
+    // Reset all buttons
+    ['low', 'medium', 'high', 'critical'].forEach(urgency => {
+        const btn = document.getElementById(`urgency${urgency.charAt(0).toUpperCase() + urgency.slice(1)}`);
+        btn.className = 'p-3 border border-gray-300 rounded-lg text-center hover:bg-gray-50 transition-colors';
+    });
+    
+    // Highlight selected button
+    const selectedBtn = document.getElementById(`urgency${level.charAt(0).toUpperCase() + level.slice(1)}`);
+    const colors = {
+        low: 'border-green-500 bg-green-50',
+        medium: 'border-blue-500 bg-blue-50', 
+        high: 'border-orange-500 bg-orange-50',
+        critical: 'border-red-500 bg-red-50'
+    };
+    selectedBtn.className = `p-3 border ${colors[level]} rounded-lg text-center transition-colors`;
+    
+    validateForm();
+}
+
+function validateForm() {
+    const description = document.getElementById('description').value.trim();
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    
+    const hasImages = uploadedImages.length > 0;
+    const hasDescription = description.length >= 10;
+    const hasLocation = currentLocation !== null;
+    
+    // Update submit button
+    if (!hasImages) {
+        submitBtn.disabled = true;
+        submitText.textContent = '📸 Add Images First';
+    } else if (!hasLocation) {
+        submitBtn.disabled = true;
+        submitText.textContent = '📍 Select Location';
+    } else if (!hasDescription) {
+        submitBtn.disabled = true;
+        submitText.textContent = '✍️ Add Description (min 10 chars)';
+    } else {
+        submitBtn.disabled = false;
+        submitText.textContent = '🚀 Submit Request';
+    }
+    
+    return hasImages && hasDescription && hasLocation;
+}
+
+function updateProgress() {
+    const description = document.getElementById('description').value.trim();
+    
+    const hasImages = uploadedImages.length > 0;
+    const hasDescription = description.length >= 10;
+    const hasLocation = currentLocation !== null;
+    
+    // Update progress indicators
+    updateProgressItem('progressImages', hasImages, `📸 ${uploadedImages.length} images added`, '📸 Add images');
+    updateProgressItem('progressLocation', hasLocation, '✅ Location selected', '📍 Select location');
+    updateProgressItem('progressDescription', hasDescription, '✅ Description added', '✍️ Add description');
+    
+    const allComplete = hasImages && hasLocation && hasDescription;
+    updateProgressItem('progressSubmit', allComplete, '🚀 Ready to submit!', '🚀 Submit request');
+}
+
+function updateProgressItem(elementId, completed, completedText, pendingText) {
+    const element = document.getElementById(elementId);
+    const circle = element.querySelector('.w-3');
+    const text = element.querySelector('span');
+    
+    if (completed) {
+        circle.className = 'w-3 h-3 bg-green-500 rounded-full';
+        text.className = 'text-sm text-green-600 font-medium';
+        text.textContent = completedText;
+    } else {
+        circle.className = 'w-3 h-3 bg-gray-300 rounded-full';
+        text.className = 'text-sm text-gray-600';
+        text.textContent = pendingText;
+    }
+}
+
+// ===== SUBMIT FUNCTION =====
+
+function submitRequest() {
+    if (!validateForm()) {
+        alert('❌ Please complete all required fields!');
+        return;
+    }
+    
+    const description = document.getElementById('description').value.trim();
+    const expectedTime = document.getElementById('expectedTime').value;
+    const workerType = document.getElementById('workerType').value;
+    
+    // Generate unique request ID
+    const timestamp = Date.now();
+    const requestId = 'REQ-' + timestamp + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    
+    // Prepare request data
+    const requestData = {
+        request_id: requestId,
+        user_id: "{{ user._id if user else 'demo_user' }}",
+        description: description,
+        images: uploadedImages.map(img => ({
+            name: img.name,
+            size: img.size,
+            dataUrl: img.dataUrl,
+            source: img.source
+        })),
+        location: {
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+            source: currentLocation.source,
+            accuracy: currentLocation.accuracy
+        },
+        expected_time: expectedTime,
+        worker_preferences: {
+            type: workerType,
+            specialization: 'general'
+        },
+        urgency: selectedUrgency,
+        timestamp: new Date().toISOString(),
+        language_preference: 'en'
+    };
+    
+    console.log('🚀 Submitting request:', requestData);
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    
+    submitBtn.disabled = true;
+    submitText.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Submitting...';
+    
+    // Submit to backend
+    fetch('/citizen/api/requests', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(`✅ Success! Request ${result.requestId} submitted successfully!\n\n🤖 AI analysis starting...\n📱 You'll receive updates via notifications.`);
+            
+            // Reset form
+            resetForm();
+            
+            // Optional: Redirect to requests page
+            // window.location.href = '/citizen/requests';
+        } else {
+            alert(`❌ Error: ${result.message || 'Unknown error occurred'}`);
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitText.textContent = '🚀 Submit Request';
+        }
+    })
+    .catch(error => {
+        console.error('❌ Submit error:', error);
+        alert('❌ Network error. Please check your connection and try again.');
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitText.textContent = '🚀 Submit Request';
+    });
+}
+
+function resetForm() {
+    // Clear images
+    uploadedImages = [];
+    displayImagePreview();
+    
+    // Clear description
+    document.getElementById('description').value = '';
+    document.getElementById('charCount').textContent = '0';
+    
+    // Reset form fields
+    document.getElementById('expectedTime').value = 'not_specified';
+    document.getElementById('workerType').value = 'any';
+    setUrgency('medium');
+    
+    // Keep location for convenience (user might report multiple issues from same area)
+    
+    // Reset submit button
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    submitBtn.disabled = true;
+    submitText.textContent = '🚀 Submit Request';
+    
+    // Update progress
+    updateProgress();
+    validateForm();
+    
+    console.log('✨ Form reset successfully');
+}
+
+// Initialize everything when page loads
+console.log('🆕 Enhanced New Request JavaScript loaded successfully!');
+</script>
+{% endblock %}

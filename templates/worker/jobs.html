@@ -1,0 +1,1498 @@
+<!-- templates/worker/jobs.html - FIXED VERSION -->
+{% extends "base.html" %}
+
+{% block title %}Available Jobs - CleanGuard{% endblock %}
+
+{% block extra_css %}
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+<style>
+/* FIXED: Prevent button double-click styling */
+.job-action-btn {
+    transition: all 0.2s ease;
+    pointer-events: auto;
+}
+
+.job-action-btn:disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* FIXED: Better marker positioning */
+.job-marker {
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.job-marker:hover {
+    transform: scale(1.1);
+}
+
+/* FIXED: Route visualization */
+.route-point {
+    background: #3b82f6;
+    border: 3px solid white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">🗂️ Build Your Collection Route</h1>
+        <p class="text-lg text-gray-600">Select your location to see available jobs, then build your route</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        
+        <!-- Left Side - Map -->
+        <div class="space-y-6">
+            
+            <!-- Location Status -->
+            <div id="locationStatus" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center space-x-2">
+                    <div id="locationIndicator" class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span id="locationText" class="text-blue-700">📍 Getting your location...</span>
+                </div>
+            </div>
+            
+            <!-- Map Container -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">🗺️ Location & Jobs Map</h3>
+                            <p class="text-sm text-gray-600">🗂️ Bins • 🚩 Citizen Requests • 🔵 Your Route</p>
+                        </div>
+                        <button id="currentLocationBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
+                            📍 Current Location
+                        </button>
+                    </div>
+                </div>
+                <div class="h-96">
+                    <div id="map" class="w-full h-full"></div>
+                </div>
+            </div>
+
+            <!-- Selected Location Details -->
+            <div id="selectedLocationDetails" class="bg-white rounded-xl shadow-md p-4 hidden">
+                <h4 class="font-semibold text-gray-900 mb-2">📍 Selected Location</h4>
+                <p class="text-sm text-gray-600">
+                    <strong>Coordinates:</strong> <span id="locationCoordinates">-</span><br>
+                    <span id="locationSource">-</span>
+                </p>
+                <button id="findJobsBtn" class="mt-3 w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium">
+                    🔍 Find Jobs at This Location
+                </button>
+            </div>
+        </div>
+        
+        <!-- Right Side - Job Details & Route -->
+        <div class="space-y-6">
+            
+            <!-- Job Details Panel -->
+            <div id="jobDetailsPanel" class="bg-white rounded-xl shadow-md hidden">
+                <div class="p-4 border-b bg-blue-600 text-white">
+                    <h3 class="font-bold">📋 Job Details</h3>
+                </div>
+                <div class="p-4">
+                    <div id="jobDetailsContent">
+                        <!-- Job details will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Jobs List -->
+            <div id="availableJobsPanel" class="bg-white rounded-xl shadow-md hidden">
+                <div class="p-4 border-b">
+                    <h3 class="font-bold text-gray-900">📋 Available Jobs</h3>
+                    <p class="text-sm text-gray-600"><span id="jobCount">0</span> jobs found</p>
+                </div>
+                <div id="jobsList" class="max-h-64 overflow-y-auto">
+                    <!-- Jobs list will be populated here -->
+                </div>
+            </div>
+
+            <!-- Route Panel -->
+            <div class="bg-white rounded-xl shadow-md">
+                <div class="p-4 border-b bg-green-600 text-white">
+                    <h3 class="font-bold">🛤️ My Collection Route</h3>
+                </div>
+                <div class="p-4">
+                    
+                    <!-- Route Items -->
+                    <div id="routeItems" class="space-y-2 mb-4">
+                        <div id="emptyRoute" class="text-center py-8">
+                            <div class="text-4xl mb-2">🛤️</div>
+                            <p class="text-sm text-gray-500">Click on map jobs to add to route</p>
+                        </div>
+                    </div>
+
+                    <!-- Route Summary -->
+                    <div id="routeSummary" class="border-t pt-4 hidden">
+                        <div class="space-y-2 mb-4 text-sm">
+                            <div class="flex justify-between">
+                                <span>Jobs:</span>
+                                <span id="routeJobCount" class="font-bold">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Total Earnings:</span>
+                                <span id="routeEarnings" class="font-bold text-green-600">₹0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Estimated Time:</span>
+                                <span id="routeTime" class="font-bold text-blue-600">0m</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Total Distance:</span>
+                                <span id="routeDistance" class="font-bold text-purple-600">0km</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Route Actions -->
+                        <div class="space-y-2">
+                            <button id="optimizeRouteBtn" class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium">
+                                🎯 Optimize Route
+                            </button>
+                            <button id="confirmRouteBtn" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium">
+                                ✅ Confirm & Start Journey
+                            </button>
+                            <button id="clearRouteBtn" class="w-full bg-red-500 hover:bg-red-600 text-white py-1 px-4 rounded">
+                                🗂️ Clear Route
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<script>
+// =============================================================================
+// COMPLETE FIXED SCRIPT FOR jobs.html - NO MORE DOUBLE CLICKS OR FLOATING BINS
+// =============================================================================
+
+// Global variables
+let myRoute = [];
+let allJobs = [];
+let currentLocation = null;
+let selectedLocation = null;
+let map = null;
+let locationMarker = null;
+let jobMarkers = [];
+let routeSource = null;
+
+// FIXED: Button click state management
+let isProcessingClick = false;
+let buttonStates = new Map(); // Track button states by job ID
+
+// Initialize Mapbox
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2FrZXRoMjQyMSIsImEiOiJjbWVkYnFuY2gwOTE4MmtzZ3VhcGNsNWVjIn0.vJsyUnbBKBs9S1ZOO8kHKg';
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🗂️ Worker route builder loaded - FIXED VERSION');
+    
+    // Auto-detect location
+    autoDetectLocation();
+    
+    // Initialize map
+    initializeMap();
+    
+    // Setup event listeners
+    setupEventListeners();
+});
+
+// Auto detect location like citizen page
+function autoDetectLocation() {
+    if (!navigator.geolocation) {
+        updateLocationStatus('❌ Location not supported', 'error');
+        return;
+    }
+    
+    updateLocationStatus('📍 Getting your current location...', 'loading');
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            
+            currentLocation = { lng: longitude, lat: latitude, accuracy };
+            setLocation(longitude, latitude, 'GPS Auto-detected', accuracy);
+            updateLocationStatus('✅ Location detected automatically', 'success');
+            
+            // Auto-find jobs after location detected
+            setTimeout(() => {
+                findJobsAtLocation();
+            }, 1000);
+        },
+        (error) => {
+            console.error('Location error:', error);
+            updateLocationStatus('⚠️ Click on map to select location', 'error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000
+        }
+    );
+}
+
+function updateLocationStatus(message, type) {
+    const statusEl = document.getElementById('locationStatus');
+    const textEl = document.getElementById('locationText');
+    const indicator = document.getElementById('locationIndicator');
+    
+    textEl.textContent = message;
+    
+    if (type === 'loading') {
+        statusEl.className = 'p-3 bg-blue-50 border border-blue-200 rounded-lg';
+        indicator.className = 'w-4 h-4 bg-blue-500 rounded-full animate-pulse';
+    } else if (type === 'success') {
+        statusEl.className = 'p-3 bg-green-50 border border-green-200 rounded-lg';
+        indicator.className = 'w-4 h-4 bg-green-500 rounded-full';
+    } else if (type === 'error') {
+        statusEl.className = 'p-3 bg-red-50 border border-red-200 rounded-lg';
+        indicator.className = 'w-4 h-4 bg-red-500 rounded-full';
+    }
+}
+
+// FIXED: Initialize map with proper navigation routing
+function initializeMap() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [81.5185, 16.5449], // Default to Vijayawada
+        zoom: 12
+    });
+    
+    map.addControl(new mapboxgl.NavigationControl());
+    
+    // Click event for selecting location on map + DYNAMIC JOB LOADING
+    map.on('click', function(e) {
+        const clickedLng = e.lngLat.lng;
+        const clickedLat = e.lngLat.lat;
+        
+        // Set new location
+        setLocation(clickedLng, clickedLat, 'Selected on map');
+        updateLocationStatus('📍 New location selected - finding jobs...', 'loading');
+        
+        // AUTOMATICALLY FIND JOBS AT NEW LOCATION
+        setTimeout(() => {
+            findJobsAtNewLocation(clickedLat, clickedLng);
+        }, 500);
+    });
+    
+    // Map load event - setup route layer
+    map.on('load', function() {
+        console.log('🗺️ Map loaded, setting up route layers...');
+        
+        // FIXED: Add proper route source for navigation
+        map.addSource('route', {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': []
+                }
+            }
+        });
+        
+        // FIXED: Add navigation route layer (BRIGHT BLUE LINE)
+        map.addLayer({
+            'id': 'route',
+            'type': 'line',
+            'source': 'route',
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#3b82f6', // Bright blue
+                'line-width': 6,
+                'line-opacity': 0.9
+            }
+        });
+        
+        // FIXED: Add route points layer
+        map.addSource('route-points', {
+            'type': 'geojson',
+            'data': {
+                'type': 'FeatureCollection',
+                'features': []
+            }
+        });
+        
+        map.addLayer({
+            'id': 'route-points',
+            'type': 'circle',
+            'source': 'route-points',
+            'paint': {
+                'circle-radius': 8,
+                'circle-color': '#3b82f6',
+                'circle-stroke-width': 3,
+                'circle-stroke-color': '#ffffff'
+            }
+        });
+        
+        console.log('🗺️ ✅ MAP INITIALIZED WITH FIXED NAVIGATION LAYERS');
+        
+        // FIXED: If there's already a route, show it
+        if (myRoute.length > 0) {
+            console.log('🗺️ Found existing route, updating visualization...');
+            setTimeout(() => {
+                updateRouteVisualization();
+            }, 1000);
+        }
+    });
+}
+
+// FIXED: Find jobs at clicked location
+async function findJobsAtNewLocation(lat, lng) {
+    try {
+        updateLocationStatus('🔍 Loading jobs at new location...', 'loading');
+        
+        const response = await fetch('/worker/api/jobs-near-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                latitude: lat,
+                longitude: lng,
+                area: 'Local Area',
+                city: 'Vijayawada'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // FIXED: Update jobs with proper coordinates
+            allJobs = data.jobs.map(job => ({
+                ...job,
+                coordinates: {
+                    lat: job.coordinates?.lat || lat + (Math.random() - 0.5) * 0.005,
+                    lng: job.coordinates?.lng || lng + (Math.random() - 0.5) * 0.005
+                }
+            }));
+            
+            renderJobMarkers();
+            showAvailableJobs(allJobs);
+            document.getElementById('jobCount').textContent = allJobs.length;
+            updateLocationStatus(`✅ Found ${allJobs.length} jobs at location`, 'success');
+        } else {
+            throw new Error(data.message);
+        }
+        
+    } catch (error) {
+        console.error('Find jobs error:', error);
+        updateLocationStatus('❌ Failed to load jobs', 'error');
+        
+        // FIXED: Generate demo jobs with proper coordinates near clicked location
+        generateDemoJobsNearLocation(lat, lng);
+    }
+}
+
+// FIXED: Generate demo jobs with precise coordinates
+function generateDemoJobsNearLocation(lat, lng) {
+    console.log(`🎭 Generating demo jobs near ${lat}, ${lng}`);
+    
+    const demoJobs = [];
+    const jobTypes = [
+        { emoji: '🗂️', title: 'Plastic Waste Bin', type: 'bin', earnings: 250 },
+        { emoji: '🚩', title: 'Citizen Request', type: 'request', earnings: 400 },
+        { emoji: '♻️', title: 'Recycling Bin', type: 'bin', earnings: 300 },
+        { emoji: '🗑️', title: 'General Waste', type: 'bin', earnings: 200 },
+        { emoji: '🚩', title: 'Urgent Cleanup', type: 'request', earnings: 500 }
+    ];
+    
+    // FIXED: Create jobs in a realistic pattern around the location
+    const realistic_locations = [
+        {name: "Main Road Junction", lat_offset: 0.002, lng_offset: 0.001},
+        {name: "Shopping Complex", lat_offset: -0.001, lng_offset: 0.003},
+        {name: "Bus Stop Area", lat_offset: 0.003, lng_offset: -0.002},
+        {name: "Community Center", lat_offset: -0.002, lng_offset: -0.001},
+        {name: "Park Entrance", lat_offset: 0.001, lng_offset: 0.004}
+    ];
+    
+    for (let i = 0; i < 5; i++) {
+        const jobType = jobTypes[i % jobTypes.length];
+        const location = realistic_locations[i];
+        
+        // FIXED: Generate coordinates in realistic fixed positions
+        const jobLat = lat + location.lat_offset;
+        const jobLng = lng + location.lng_offset;
+        
+        demoJobs.push({
+            id: `demo_job_${i + 1}`,
+            title: `${jobType.title} - ${location.name}`,
+            description: `${jobType.title} needs collection at ${location.name}`,
+            emoji: jobType.emoji,
+            type: jobType.type,
+            earnings: jobType.earnings + Math.floor(Math.random() * 100),
+            duration: 15 + Math.floor(Math.random() * 20),
+            distance: (Math.sqrt(location.lat_offset**2 + location.lng_offset**2) * 111).toFixed(1), // Convert to km
+            coordinates: {
+                lat: jobLat,
+                lng: jobLng
+            },
+            urgency: Math.random() > 0.7 ? 'high' : 'medium',
+            fill_level: jobType.type === 'bin' ? Math.floor(60 + Math.random() * 40) : null
+        });
+    }
+    
+    allJobs = demoJobs;
+    renderJobMarkers();
+    showAvailableJobs(allJobs);
+    document.getElementById('jobCount').textContent = allJobs.length;
+    updateLocationStatus(`✅ Generated ${allJobs.length} demo jobs`, 'success');
+}
+
+function setLocation(lng, lat, source, accuracy = null) {
+    selectedLocation = { lng, lat, source, accuracy };
+    
+    // Remove existing location marker
+    if (locationMarker) {
+        locationMarker.remove();
+    }
+    
+    // Add new location marker
+    locationMarker = new mapboxgl.Marker({
+        color: '#ef4444',
+        scale: 1.5
+    })
+    .setLngLat([lng, lat])
+    .setPopup(new mapboxgl.Popup().setHTML(`
+        <div class="text-center">
+            <strong>📍 Selected Location</strong><br>
+            <small>Lat: ${lat.toFixed(6)}</small><br>
+            <small>Lng: ${lng.toFixed(6)}</small><br>
+            <small>Source: ${source}</small>
+            ${accuracy ? `<br><small>±${Math.round(accuracy)}m accuracy</small>` : ''}
+        </div>
+    `))
+    .addTo(map);
+    
+    // Center map on location
+    map.flyTo({
+        center: [lng, lat],
+        zoom: 14
+    });
+    
+    // Show location details
+    const detailsEl = document.getElementById('selectedLocationDetails');
+    const coordinatesEl = document.getElementById('locationCoordinates');
+    const sourceEl = document.getElementById('locationSource');
+    
+    detailsEl.classList.remove('hidden');
+    coordinatesEl.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    sourceEl.textContent = `Source: ${source}${accuracy ? ` (±${Math.round(accuracy)}m)` : ''}`;
+    
+    console.log('📍 Location set:', { lng, lat, source });
+}
+
+function setupEventListeners() {
+    document.getElementById('currentLocationBtn').addEventListener('click', getCurrentLocation);
+    document.getElementById('findJobsBtn').addEventListener('click', findJobsAtLocation);
+    document.getElementById('optimizeRouteBtn')?.addEventListener('click', optimizeRoute);
+    document.getElementById('confirmRouteBtn')?.addEventListener('click', confirmRoute);
+    document.getElementById('clearRouteBtn')?.addEventListener('click', clearRoute);
+}
+
+function getCurrentLocation() {
+    const btn = document.getElementById('currentLocationBtn');
+    btn.textContent = '🔄 Getting...';
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            setLocation(longitude, latitude, 'GPS Current Location', accuracy);
+            updateLocationStatus('✅ Current location updated', 'success');
+            btn.textContent = '📍 Current Location';
+        },
+        (error) => {
+            console.error('Location error:', error);
+            updateLocationStatus('❌ Location access failed', 'error');
+            btn.textContent = '📍 Current Location';
+        }
+    );
+}
+
+async function findJobsAtLocation() {
+    if (!selectedLocation) {
+        alert('Please select a location first');
+        return;
+    }
+    
+    const btn = document.getElementById('findJobsBtn');
+    btn.textContent = '🔄 Finding...';
+    updateLocationStatus('🔍 Searching for jobs...', 'loading');
+    
+    try {
+        const response = await fetch('/worker/api/jobs-near-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                latitude: selectedLocation.lat,
+                longitude: selectedLocation.lng,
+                area: 'Local Area',
+                city: 'Vijayawada'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            allJobs = data.jobs;
+            renderJobMarkers();
+            showAvailableJobs(data.jobs);
+            document.getElementById('jobCount').textContent = data.jobs.length;
+            updateLocationStatus(`✅ Found ${data.jobs.length} jobs`, 'success');
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Find jobs error:', error);
+        // Generate demo jobs if API fails
+        generateDemoJobsNearLocation(selectedLocation.lat, selectedLocation.lng);
+    }
+    
+    btn.textContent = '🔍 Find Jobs at This Location';
+}
+
+// FIXED: Render job markers with precise positioning
+function renderJobMarkers() {
+    // Clear existing markers
+    jobMarkers.forEach(marker => marker.remove());
+    jobMarkers = [];
+    
+    if (!allJobs || allJobs.length === 0) {
+        console.log('⚠️ No jobs to render');
+        return;
+    }
+    
+    allJobs.forEach(job => {
+        // FIXED: Validate coordinates before creating marker
+        if (!job.coordinates || !job.coordinates.lat || !job.coordinates.lng) {
+            console.warn('⚠️ Job missing coordinates:', job.id);
+            return;
+        }
+        
+        const isInRoute = myRoute.find(r => r.id === job.id);
+        const isAccepted = job.status === 'accepted';
+        let markerColor = '#6366f1'; // Default blue
+        
+        if (isAccepted) {
+            markerColor = '#10b981'; // Green for accepted
+        } else if (isInRoute) {
+            markerColor = '#f59e0b'; // Orange for in route
+        } else if (job.urgency === 'high') {
+            markerColor = '#ef4444'; // Red for urgent
+        }
+        
+        // Create custom marker element
+        const el = document.createElement('div');
+        el.className = 'job-marker';
+        el.style.cssText = `
+            background-color: ${markerColor};
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+        `;
+        el.innerHTML = job.emoji;
+        
+        // FIXED: Create marker with precise coordinates
+        const marker = new mapboxgl.Marker(el)
+            .setLngLat([job.coordinates.lng, job.coordinates.lat])
+            .setPopup(new mapboxgl.Popup().setHTML(`
+                <div class="text-center p-2">
+                    <div class="text-2xl mb-2">${job.emoji}</div>
+                    <strong>${job.title}</strong><br>
+                    <small>₹${job.earnings} • ${job.duration}m • ${job.distance}km</small><br>
+                    <small class="text-gray-600">${job.description}</small><br>
+                    ${isAccepted ? 
+                        '<div class="mt-1 text-green-600 text-xs font-bold">✅ ACCEPTED</div>' :
+                        isInRoute ? 
+                            '<div class="mt-1 text-orange-600 text-xs font-bold">📋 IN ROUTE</div>' :
+                            '<div class="mt-1 text-blue-600 text-xs">Click for details</div>'
+                    }
+                </div>
+            `))
+            .addTo(map);
+        
+        // FIXED: Click event for marker - Show job details (prevent double clicking)
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // FIXED: Prevent double click processing
+            if (isProcessingClick) return;
+            
+            showJobDetails(job);
+            
+            // Center map on clicked job (smooth animation)
+            map.flyTo({
+                center: [job.coordinates.lng, job.coordinates.lat],
+                zoom: 16,
+                duration: 1000
+            });
+        });
+        
+        jobMarkers.push(marker);
+    });
+    
+    console.log(`🗺️ Rendered ${jobMarkers.length} job markers with FIXED positioning`);
+}
+
+function showAvailableJobs(jobs) {
+    const panel = document.getElementById('availableJobsPanel');
+    const jobsList = document.getElementById('jobsList');
+    
+    panel.classList.remove('hidden');
+    
+    if (jobs.length === 0) {
+        jobsList.innerHTML = `
+            <div class="p-6 text-center">
+                <div class="text-4xl mb-2">🔍</div>
+                <p class="text-gray-600">No jobs found at this location</p>
+            </div>
+        `;
+        return;
+    }
+    
+    jobsList.innerHTML = jobs.map(job => `
+        <div class="job-item border-b p-3 hover:bg-gray-50 cursor-pointer"
+             onclick="showJobDetails_Safe('${job.id}')">
+            <div class="flex items-center space-x-3">
+                <span class="text-xl">${job.emoji}</span>
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 text-sm">${job.title}</h4>
+                    <p class="text-xs text-gray-600">${job.description}</p>
+                    <div class="flex items-center space-x-3 text-xs mt-1">
+                        <span class="text-green-600">₹${job.earnings}</span>
+                        <span class="text-blue-600">${job.duration}m</span>
+                        <span class="text-purple-600">${job.distance}km</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// FIXED: Safe job details function to prevent double processing
+function showJobDetails_Safe(jobId) {
+    const job = allJobs.find(j => j.id === jobId);
+    if (job) {
+        showJobDetails(job);
+    }
+}
+
+function showJobDetails(job) {
+    const panel = document.getElementById('jobDetailsPanel');
+    const content = document.getElementById('jobDetailsContent');
+    
+    const isInRoute = myRoute.find(r => r.id === job.id);
+    const isAccepted = job.status === 'accepted';
+    
+    content.innerHTML = `
+        <div class="space-y-4">
+            <div class="text-center">
+                <span class="text-4xl">${job.emoji}</span>
+                <h4 class="text-lg font-bold text-gray-900 mt-2">${job.title}</h4>
+                <p class="text-gray-600">${job.description}</p>
+                
+                ${job.type === 'request' ? 
+                    `<div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-3">
+                        <strong>📋 Request Details:</strong><br>
+                        <strong>🚩 Urgency:</strong> ${job.urgency}<br>
+                        <strong>💰 Payment:</strong> ₹${job.earnings}<br>
+                        <strong>⏱️ Duration:</strong> ${job.duration} minutes<br>
+                        <strong>📏 Distance:</strong> ${job.distance}km
+                    </div>` :
+                    `<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                        <strong>🗂️ Bin Details:</strong><br>
+                        <strong>📊 Fill Level:</strong> ${job.fill_level}%<br>
+                        <strong>💰 Payment:</strong> ₹${job.earnings}<br>
+                        <strong>⏱️ Duration:</strong> ${job.duration} minutes<br>
+                        <strong>📏 Distance:</strong> ${job.distance}km
+                    </div>`
+                }
+                
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3">
+                    <strong>🏷️ Job ID:</strong> ${job.id}
+                </div>
+            </div>
+            
+            ${isAccepted ? 
+                `<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                    <span class="text-green-700 font-medium">✅ Job Accepted</span>
+                </div>` :
+                
+                isInRoute ? 
+                    `<button onclick="removeFromRoute_Safe('${job.id}')" class="job-action-btn w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium">
+                        ❌ Remove from Route
+                    </button>` :
+                    
+                    `<div class="grid grid-cols-2 gap-3">
+                        <button onclick="leaveJob_Safe('${job.id}')" class="job-action-btn bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium">
+                            👎 Leave
+                        </button>
+                        <button onclick="acceptJob_Safe('${job.id}')" class="job-action-btn bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium">
+                            ✅ Accept
+                        </button>
+                    </div>`
+            }
+        </div>
+    `;
+    
+    panel.classList.remove('hidden');
+    
+    console.log('📋 Showing details for:', job.title);
+}
+
+// ===== FIXED: BUTTON CLICK HANDLERS (NO MORE DOUBLE CLICKS) =====
+
+// FIXED: Accept job function with button state management
+async function acceptJob_Safe(jobId) {
+    // Prevent double clicking
+    if (isProcessingClick || buttonStates.get(jobId) === 'processing') {
+        console.log('⚠️ Already processing job acceptance');
+        return;
+    }
+    
+    const job = allJobs.find(j => j.id === jobId);
+    if (!job) {
+        console.error('❌ Job not found for ID:', jobId);
+        showErrorMessage('❌ Job not found');
+        return;
+    }
+    
+    // Set processing state immediately
+    isProcessingClick = true;
+    buttonStates.set(jobId, 'processing');
+    
+    // Disable button immediately
+    const acceptBtn = document.querySelector(`button[onclick="acceptJob_Safe('${jobId}')"]`);
+    if (acceptBtn) {
+        acceptBtn.disabled = true;
+        acceptBtn.innerHTML = '🔄 Accepting...';
+        acceptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    
+    try {
+        console.log(`✅ FIXED: Accepting job: ${job.title}`);
+        
+        // FIXED: Ensure job has proper data structure
+        const requestData = {
+            job_id: String(job.id), // Ensure it's a string
+            job_type: String(job.type), // Ensure it's a string
+            db_id: String(job.db_id || job.id) // Fallback to job.id if db_id missing
+        };
+        
+        console.log('🔍 DEBUG: Sending request data:', requestData);
+        
+        // FIXED: Call the improved API endpoint with better error handling
+        const response = await fetch('/worker/api/accept-job-immediate-fix', {
+    method: 'POST', 
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({job_id, job_type, db_id})
+})
+        
+        console.log('🔍 DEBUG: Response status:', response.status);
+        console.log('🔍 DEBUG: Response ok:', response.ok);
+        
+        // Get response text first for debugging
+        const responseText = await response.text();
+        console.log('🔍 DEBUG: Response text:', responseText);
+        
+        if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = JSON.parse(responseText);
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch (parseError) {
+                console.error('Failed to parse error response:', parseError);
+            }
+            throw new Error(errorMessage);
+        }
+        
+        // Parse the successful response
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse success response:', parseError);
+            throw new Error('Invalid response format from server');
+        }
+        
+        console.log('✅ SUCCESS: Server response:', data);
+        
+        if (data.success) {
+            // Update job status locally
+            job.status = 'accepted';
+            job.acceptedAt = data.accepted_at;
+            
+            // Add to route automatically - FIXED: Check if route functions exist
+            try {
+                addToRoute(jobId);
+                console.log('✅ Added job to route successfully');
+            } catch (routeError) {
+                console.error('❌ Error adding to route:', routeError);
+                // Don't fail the whole operation if route update fails
+            }
+            
+            // Show success message
+            showSuccessMessage(`✅ Job accepted! Added to your route.`);
+            
+            // Refresh job details
+            try {
+                showJobDetails(job);
+            } catch (detailsError) {
+                console.error('❌ Error refreshing job details:', detailsError);
+            }
+            
+            // Update button permanently
+            if (acceptBtn) {
+                acceptBtn.innerHTML = '✅ Accepted';
+                acceptBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                acceptBtn.classList.add('bg-gray-400');
+                acceptBtn.disabled = true;
+            }
+            
+        } else {
+            throw new Error(data.message || 'Job acceptance failed');
+        }
+        
+    } catch (error) {
+        console.error('❌ FIXED Accept job error:', error);
+        
+        // Show user-friendly error message
+        showErrorMessage(`❌ Failed to accept job: ${error.message}`);
+        
+        // Reset button state on error
+        if (acceptBtn) {
+            acceptBtn.disabled = false;
+            acceptBtn.innerHTML = '✅ Accept';
+            acceptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        
+    } finally {
+        // Reset processing states after delay
+        setTimeout(() => {
+            isProcessingClick = false;
+            buttonStates.set(jobId, 'idle');
+        }, 1000); // 1 second delay to prevent rapid clicking
+    }
+}
+// FIXED: Leave job function with proper state management
+function leaveJob_Safe(jobId) {
+    if (isProcessingClick) return;
+    isProcessingClick = true;
+    
+    const job = allJobs.find(j => j.id === jobId);
+    if (!job) {
+        isProcessingClick = false;
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to leave this job?\n\n${job.title}\nEarnings: ₹${job.earnings}`)) {
+        console.log(`👎 Left job: ${job.title}`);
+        
+        // Remove from available jobs
+        allJobs = allJobs.filter(j => j.id !== jobId);
+        
+        // Re-render markers and jobs list
+        renderJobMarkers();
+        showAvailableJobs(allJobs);
+        
+        // Hide job details panel
+        document.getElementById('jobDetailsPanel').classList.add('hidden');
+        
+        // Update job count
+        document.getElementById('jobCount').textContent = allJobs.length;
+        
+        showSuccessMessage('👎 Job removed from available jobs.');
+    }
+    
+    // Reset processing state
+    setTimeout(() => {
+        isProcessingClick = false;
+    }, 500);
+}
+
+// FIXED: Route management functions
+function addToRoute(jobId) {
+    const job = allJobs.find(j => j.id === jobId);
+    if (!job) {
+        console.error('❌ Job not found for route:', jobId);
+        return;
+    }
+    
+    // Check if already added
+    if (myRoute.find(r => r.id === jobId)) {
+        console.log('⚠️ Job already in route');
+        return;
+    }
+    
+    // Add to route
+    myRoute.push(job);
+    console.log(`✅ Added to route: ${job.title} (Total: ${myRoute.length} jobs)`);
+    
+    // Update UI and visualization immediately
+    updateRouteDisplay();
+    updateRouteVisualization(); // This should trigger the blue line
+    renderJobMarkers(); // Re-render to show route status
+    
+    console.log(`🗺️ Route visualization updated for ${myRoute.length} jobs`);
+}
+function removeFromRoute_Safe(jobId) {
+    if (isProcessingClick) return;
+    isProcessingClick = true;
+    
+    const job = allJobs.find(j => j.id === jobId);
+    
+    myRoute = myRoute.filter(r => r.id !== jobId);
+    updateRouteDisplay();
+    updateRouteVisualization();
+    renderJobMarkers(); // Re-render to show route status
+    
+    // Refresh job details to show add button
+    if (job) {
+        showJobDetails(job);
+    }
+    
+    console.log(`❌ Removed from route: ${job ? job.title : 'Unknown job'}`);
+    
+    // Reset processing state
+    setTimeout(() => {
+        isProcessingClick = false;
+    }, 500);
+}
+
+function updateRouteDisplay() {
+    const routeItems = document.getElementById('routeItems');
+    const routeSummary = document.getElementById('routeSummary');
+    const emptyRoute = document.getElementById('emptyRoute');
+    
+    // FIXED: Check if DOM elements exist before using them
+    if (!routeItems) {
+        console.error('❌ routeItems element not found in DOM');
+        return;
+    }
+    
+    if (!routeSummary) {
+        console.error('❌ routeSummary element not found in DOM');
+        return;
+    }
+    
+    if (!emptyRoute) {
+        console.error('❌ emptyRoute element not found in DOM');
+        return;
+    }
+    
+    if (myRoute.length === 0) {
+        emptyRoute.style.display = 'block';
+        routeSummary.classList.add('hidden');
+        return;
+    }
+    
+    emptyRoute.style.display = 'none';
+    routeSummary.classList.remove('hidden');
+    
+    // Update route items
+    routeItems.innerHTML = myRoute.map((job, index) => `
+        <div class="flex items-center space-x-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+            <span class="text-lg">${job.emoji}</span>
+            <div class="flex-1">
+                <h5 class="font-medium text-sm">${index + 1}. ${job.title}</h5>
+                <p class="text-xs text-gray-600">₹${job.earnings} • ${job.duration}m</p>
+            </div>
+            <button onclick="removeFromRoute_Safe('${job.id}')" class="text-red-500 hover:text-red-700 text-sm">
+                ❌
+            </button>
+        </div>
+    `).join('');
+    
+    // Update summary - FIXED: Check elements exist
+    const totalEarnings = myRoute.reduce((sum, job) => sum + job.earnings, 0);
+    const totalTime = myRoute.reduce((sum, job) => sum + job.duration, 0);
+    const totalDistance = myRoute.reduce((sum, job) => sum + parseFloat(job.distance), 0);
+    
+    const routeJobCountEl = document.getElementById('routeJobCount');
+    const routeEarningsEl = document.getElementById('routeEarnings');
+    const routeTimeEl = document.getElementById('routeTime');
+    const routeDistanceEl = document.getElementById('routeDistance');
+    
+    if (routeJobCountEl) routeJobCountEl.textContent = myRoute.length;
+    if (routeEarningsEl) routeEarningsEl.textContent = `₹${totalEarnings}`;
+    if (routeTimeEl) routeTimeEl.textContent = `${totalTime}m`;
+    if (routeDistanceEl) routeDistanceEl.textContent = `${totalDistance.toFixed(1)}km`;
+    
+    console.log(`✅ Route display updated: ${myRoute.length} jobs, ₹${totalEarnings} total`);
+}
+
+
+// FIXED: Route visualization with proper navigation routing
+function updateRouteVisualization() {
+    console.log('🗺️ updateRouteVisualization called with', myRoute.length, 'jobs');
+    
+    if (!map) {
+        console.error('❌ Map not initialized');
+        return;
+    }
+    
+    if (!map.getSource('route')) {
+        console.error('❌ Route source not found on map');
+        return;
+    }
+    
+    if (myRoute.length === 0) {
+        console.log('🗺️ Clearing route - no jobs selected');
+        // Clear route if no jobs selected
+        map.getSource('route').setData({
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        });
+        
+        if (map.getSource('route-points')) {
+            map.getSource('route-points').setData({
+                'type': 'FeatureCollection',
+                'features': []
+            });
+        }
+        return;
+    }
+    
+    console.log(`🗺️ Creating route visualization for ${myRoute.length} jobs`);
+    
+    // FIXED: Create proper navigation route
+    createNavigationRoute();
+}
+
+
+// FIXED: Create navigation route using Mapbox Directions API
+async function createNavigationRoute() {
+    try {
+        console.log('🛣️ Creating navigation route...');
+        
+        // Build waypoints for navigation
+        const waypoints = [];
+        
+        // Start from selected location
+        if (selectedLocation) {
+            waypoints.push([selectedLocation.lng, selectedLocation.lat]);
+            console.log('📍 Added start location:', selectedLocation);
+        } else {
+            console.warn('⚠️ No selected location, using first job as start');
+        }
+        
+        // Add all route points in order
+        myRoute.forEach((job, index) => {
+            if (job.coordinates && job.coordinates.lng && job.coordinates.lat) {
+                waypoints.push([job.coordinates.lng, job.coordinates.lat]);
+                console.log(`📍 Added job ${index + 1}: ${job.title} at [${job.coordinates.lng}, ${job.coordinates.lat}]`);
+            } else {
+                console.error(`❌ Job ${index + 1} missing coordinates:`, job);
+            }
+        });
+        
+        console.log(`🗺️ Total waypoints: ${waypoints.length}`);
+        
+        if (waypoints.length < 2) {
+            console.warn('⚠️ Need at least 2 waypoints for route, creating simple line');
+            createStraightLineRoute(waypoints);
+            return;
+        }
+        
+        // FIXED: Try Mapbox Directions API first, with fallback
+        try {
+            const coordinates = waypoints.map(coord => `${coord[0]},${coord[1]}`).join(';');
+            const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+            
+            console.log('🌐 Fetching navigation route from Mapbox Directions API...');
+            console.log('🔗 URL:', directionsUrl);
+            
+            const response = await fetch(directionsUrl);
+            const data = await response.json();
+            
+            console.log('📡 Directions API response:', data);
+            
+            if (data.routes && data.routes.length > 0) {
+                // SUCCESS: Use actual navigation route geometry
+                const route = data.routes[0];
+                
+                console.log('✅ Got navigation route with', route.legs.length, 'legs');
+                console.log('📏 Route distance:', route.distance, 'meters');
+                console.log('⏱️ Route duration:', route.duration, 'seconds');
+                
+                map.getSource('route').setData({
+                    'type': 'Feature',
+                    'properties': {
+                        'distance': route.distance,
+                        'duration': route.duration
+                    },
+                    'geometry': route.geometry
+                });
+                
+                console.log('🗺️ ✅ NAVIGATION ROUTE UPDATED ON MAP');
+                
+                // Update route stats with real navigation data
+                updateRouteStatsWithNavigation(route);
+                
+                // Update route points
+                updateRoutePoints();
+                
+            } else {
+                console.warn('⚠️ No routes returned from Directions API, using straight lines');
+                createStraightLineRoute(waypoints);
+            }
+            
+        } catch (apiError) {
+            console.error('❌ Directions API failed:', apiError);
+            console.log('🔄 Falling back to straight line route');
+            createStraightLineRoute(waypoints);
+        }
+        
+    } catch (error) {
+        console.error('❌ Navigation route error:', error);
+        // Ultimate fallback
+        createStraightLineRoute([]);
+    }
+}
+
+
+function createStraightLineRoute(waypoints) {
+    console.log('📏 Creating straight line route with', waypoints.length, 'waypoints');
+    
+    try {
+        // If no waypoints provided, build them from current route
+        if (waypoints.length === 0) {
+            waypoints = [];
+            
+            if (selectedLocation) {
+                waypoints.push([selectedLocation.lng, selectedLocation.lat]);
+            }
+            
+            myRoute.forEach(job => {
+                if (job.coordinates && job.coordinates.lng && job.coordinates.lat) {
+                    waypoints.push([job.coordinates.lng, job.coordinates.lat]);
+                }
+            });
+        }
+        
+        if (waypoints.length < 2) {
+            console.warn('⚠️ Not enough waypoints for straight line route');
+            return;
+        }
+        
+        // Create straight line route
+        map.getSource('route').setData({
+            'type': 'Feature',
+            'properties': {
+                'route_type': 'straight_line'
+            },
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': waypoints
+            }
+        });
+        
+        console.log('🗺️ ✅ STRAIGHT LINE ROUTE UPDATED ON MAP');
+        
+        // Update route points
+        updateRoutePoints();
+        
+        // Fit map to show the route
+        if (waypoints.length > 1) {
+            const bounds = new mapboxgl.LngLatBounds();
+            waypoints.forEach(coord => bounds.extend(coord));
+            
+            map.fitBounds(bounds, {
+                padding: 50,
+                duration: 1000
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error creating straight line route:', error);
+    }
+}
+function updateRoutePoints() {
+    try {
+        if (!map.getSource('route-points')) {
+            console.warn('⚠️ route-points source not found');
+            return;
+        }
+        
+        const routeFeatures = myRoute.map((job, index) => ({
+            'type': 'Feature',
+            'properties': {
+                'order': index + 1,
+                'title': job.title,
+                'earnings': job.earnings
+            },
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [job.coordinates.lng, job.coordinates.lat]
+            }
+        }));
+        
+        map.getSource('route-points').setData({
+            'type': 'FeatureCollection',
+            'features': routeFeatures
+        });
+        
+        console.log('🗺️ ✅ ROUTE POINTS UPDATED:', routeFeatures.length, 'points');
+        
+    } catch (error) {
+        console.error('❌ Error updating route points:', error);
+    }
+}
+
+
+function updateRouteStatsWithNavigation(route) {
+    try {
+        // Update UI with real navigation data
+        const realDistance = (route.distance / 1000).toFixed(1); // Convert to km
+        const realDuration = Math.ceil(route.duration / 60); // Convert to minutes
+        const jobTime = myRoute.reduce((sum, job) => sum + job.duration, 0);
+        
+        const routeDistanceEl = document.getElementById('routeDistance');
+        const routeTimeEl = document.getElementById('routeTime');
+        
+        if (routeDistanceEl) {
+            routeDistanceEl.textContent = `${realDistance}km`;
+        }
+        
+        if (routeTimeEl) {
+            routeTimeEl.textContent = `${realDuration + jobTime}m`;
+        }
+        
+        console.log(`📊 ✅ ROUTE STATS UPDATED - ${realDistance}km, ${realDuration}min travel + ${jobTime}min work`);
+        
+    } catch (error) {
+        console.error('❌ Error updating route stats:', error);
+    }
+}
+
+// Route optimization (placeholder)
+function optimizeRoute() {
+    if (myRoute.length < 2) {
+        alert('Add at least 2 jobs to optimize route');
+        return;
+    }
+    
+    // FIXED: Simple optimization - sort by distance from current location
+    if (selectedLocation) {
+        myRoute.sort((a, b) => {
+            const distA = Math.sqrt(Math.pow(a.coordinates.lat - selectedLocation.lat, 2) + Math.pow(a.coordinates.lng - selectedLocation.lng, 2));
+            const distB = Math.sqrt(Math.pow(b.coordinates.lat - selectedLocation.lat, 2) + Math.pow(b.coordinates.lng - selectedLocation.lng, 2));
+            return distA - distB;
+        });
+        
+        updateRouteDisplay();
+        updateRouteVisualization();
+        showSuccessMessage('🎯 Route optimized for minimum travel distance!');
+    }
+}
+
+async function confirmRoute() {
+    if (myRoute.length === 0) {
+        showErrorMessage('Add jobs to your route first!');
+        return;
+    }
+    
+    if (!confirm(`Confirm route with ${myRoute.length} jobs?\n\nThis will update the database and notify citizens.`)) {
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmRouteBtn');
+    if (!confirmBtn) {
+        console.error('❌ confirmRouteBtn element not found');
+        showErrorMessage('UI error: Confirm button not found');
+        return;
+    }
+    
+    try {
+        confirmBtn.textContent = '🔄 Confirming...';
+        confirmBtn.disabled = true;
+        
+        // FIXED: Ensure proper data structure
+        const requestData = {
+            selected_jobs: myRoute.map(job => ({
+                ...job,
+                id: String(job.id),
+                type: String(job.type),
+                earnings: Number(job.earnings) || 0,
+                duration: Number(job.duration) || 0
+            })),
+            start_location: selectedLocation || { lat: 16.5449, lng: 81.5185 },
+            worker_action: 'confirm_route'
+        };
+        
+        console.log('🔍 DEBUG: Confirming route with data:', requestData);
+        
+        // Send route confirmation to backend
+        const response = await fetch('/worker/api/start-journey', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        const responseText = await response.text();
+        console.log('🔍 DEBUG: Start journey response:', responseText);
+        
+        if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = JSON.parse(responseText);
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch (parseError) {
+                console.error('Failed to parse error response:', parseError);
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const data = JSON.parse(responseText);
+        
+        if (data.success) {
+            showSuccessMessage(`🚀 Route confirmed successfully!\n\n✅ ${data.updated_requests || 0} citizen requests updated\n✅ ${data.updated_bins || 0} bins assigned\n✅ Citizens will be notified\n\nStarting journey...`);
+            
+            // Redirect to active journey tracking after a short delay
+            setTimeout(() => {
+                window.location.href = '/worker/active-route';
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Route confirmation failed');
+        }
+    } catch (error) {
+        console.error('Confirm route error:', error);
+        showErrorMessage(`❌ Failed to confirm route: ${error.message}`);
+        
+        // Reset button
+        if (confirmBtn) {
+            confirmBtn.textContent = '✅ Confirm & Start Journey';
+            confirmBtn.disabled = false;
+        }
+    }
+}
+
+function clearRoute() {
+    if (myRoute.length === 0) return;
+    
+    if (confirm('Clear entire route?')) {
+        myRoute = [];
+        updateRouteDisplay();
+        updateRouteVisualization();
+        renderJobMarkers();
+        
+        // Hide job details panel
+        document.getElementById('jobDetailsPanel').classList.add('hidden');
+        
+        console.log('🗂️ Route cleared');
+    }
+}
+
+// ===== HELPER FUNCTIONS FOR BETTER USER FEEDBACK =====
+
+function showSuccessMessage(message) {
+    // Remove any existing toasts first
+    const existingToasts = document.querySelectorAll('.success-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'success-toast fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity max-w-md';
+    toast.innerHTML = message.replace(/\n/g, '<br>');
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 4000);
+}
+
+function showErrorMessage(message) {
+    // Remove any existing error toasts first
+    const existingToasts = document.querySelectorAll('.error-toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = 'error-toast fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity max-w-md';
+    toast.innerHTML = message.replace(/\n/g, '<br>');
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 6000);
+}
+function showErrorMessage(message) {
+    // FIXED: Show error toast
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Make functions available globally for onclick events
+window.showJobDetails = showJobDetails;
+window.showJobDetails_Safe = showJobDetails_Safe;
+window.acceptJob_Safe = acceptJob_Safe;
+window.leaveJob_Safe = leaveJob_Safe;
+window.addToRoute = addToRoute;
+window.removeFromRoute_Safe = removeFromRoute_Safe;
+window.optimizeRoute = optimizeRoute;
+window.confirmRoute = confirmRoute;
+window.clearRoute = clearRoute;
+
+console.log('✅ All worker job functions loaded and ready!');
+</script>
+{% endblock %}

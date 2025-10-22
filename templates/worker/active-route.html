@@ -1,0 +1,1080 @@
+<!-- templates/worker/active-route.html -->
+{% extends "base.html" %}
+
+{% block title %}🚀 Active Journey - CleanGuard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-100">
+    <!-- Route Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">🚀 Active Journey</h1>
+                    <p class="text-gray-600">Follow the route to complete your collections</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Job Earnings</div>
+                    <div class="text-2xl font-bold text-green-600">₹<span id="jobEarnings">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- INTERACTIVE MAP SECTION -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <!-- Map Controls -->
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">🗺️</div>
+                                <div>
+                                    <h3 class="font-semibold">Navigation</h3>
+                                    <p class="text-blue-100 text-sm">Follow the blue route</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-blue-100">Distance to Job</div>
+                                <div class="font-bold" id="distanceToJob">Calculating...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- REAL INTERACTIVE MAP -->
+                    <div id="map" class="h-96 bg-gray-100 relative">
+                        <!-- Loading State -->
+                        <div id="mapLoading" class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                            <div class="text-center">
+                                <div class="text-4xl mb-2 animate-pulse">🗺️</div>
+                                <p class="text-gray-600">Loading map with your location...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MOVEMENT CONTROLS -->
+                    <div class="p-4 bg-gradient-to-r from-green-50 to-blue-50 border-t">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm">🚶‍♂️</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">Worker Movement</div>
+                                    <div class="text-sm text-gray-600" id="movementStatus">Ready to start journey</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Progress</div>
+                                <div class="font-bold text-green-600" id="routeProgress">0%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <button id="moveWorkerBtn" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2">
+                                <span>🚶‍♂️</span>
+                                <span id="moveButtonText">Start Journey</span>
+                            </button>
+                            <button id="completeJobBtn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2 hidden">
+                                <span>📸</span>
+                                <span>Complete Job</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Instructions -->
+                    <div class="p-4 bg-blue-50 border-t">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-blue-900" id="navigationInstruction">Waiting for job assignment</div>
+                                <div class="text-sm text-blue-600" id="nextInstruction">Get your current location and job details</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Details Section -->
+            <div class="space-y-6">
+                
+                <!-- Current Job -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="text-center mb-4">
+                        <div class="text-sm text-gray-500 mb-2">Current Job</div>
+                        <div class="text-3xl font-bold text-blue-600" id="jobStatus">Preparing...</div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Journey Progress</span>
+                            <span id="progressPercentage">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Job Details -->
+                    <div class="border border-blue-200 rounded-lg p-4 bg-blue-50" id="jobDetailsCard">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="text-2xl" id="jobEmoji">🗑️</div>
+                            <div>
+                                <h4 class="font-semibold text-blue-900" id="jobTitle">Loading job details...</h4>
+                                <p class="text-sm text-blue-600" id="jobLocation">Getting location...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <div class="font-bold text-green-600" id="jobEarningsDisplay">₹0</div>
+                                <div class="text-xs text-gray-500">Earnings</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-purple-600" id="jobDuration">0min</div>
+                                <div class="text-xs text-gray-500">Est. Time</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Job Description -->
+                        <div class="bg-white rounded-lg p-3 mb-4">
+                            <div class="text-sm font-medium text-gray-700 mb-1">Job Description:</div>
+                            <div class="text-sm text-gray-600" id="jobDescription">Loading job details from database...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Statistics -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">📊 Job Info</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Job Type</span>
+                            <span class="font-medium" id="jobType">Waste Collection</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Priority</span>
+                            <span class="font-medium text-orange-600" id="jobPriority">Medium</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Reported By</span>
+                            <span class="font-medium text-blue-600" id="jobReporter">EcoWarrior</span>
+                        </div>
+                        <div class="border-t pt-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Time Elapsed</span>
+                                <span class="font-medium" id="timeElapsed">0 min</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Est. Remaining</span>
+                                <span class="font-medium" id="timeRemaining">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Menu -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">⚡ Quick Actions</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="/worker/jobs" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-lg text-center transition-colors">
+                            <div class="text-blue-600 text-2xl mb-2">🔍</div>
+                            <div class="font-semibold text-gray-800">Find Jobs</div>
+                            <div class="text-sm text-gray-600">Browse available work</div>
+                        </a>
+
+                        <a href="/worker/profile" class="bg-green-50 hover:bg-green-100 p-4 rounded-lg text-center transition-colors">
+                            <div class="text-green-600 text-2xl mb-2">👤</div>
+                            <div class="font-semibold text-gray-800">My Profile</div>
+                            <div class="text-sm text-gray-600">Update information</div>
+                        </a>
+
+                        <a href="/worker/earnings" class="bg-yellow-50 hover:bg-yellow-100 p-4 rounded-lg text-center transition-colors">
+                            <div class="text-yellow-600 text-2xl mb-2">💰</div>
+                            <div class="font-semibold text-gray-800">Earnings</div>
+                            <div class="text-sm text-gray-600">Payment history</div>
+                        </a>
+
+                        <a href="/worker/help" class="bg-purple-50 hover:bg-purple-100 p-4 rounded-lg text-center transition-colors">
+                            <div class="text-purple-600 text-2xl mb-2">❓</div>
+                            <div class="font-semibold text-gray-800">Help</div>
+                            <div class="text-sm text-gray-600">Get assistance</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Collection Modal -->
+<div id="photoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full">
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="text-4xl mb-3">📸</div>
+                    <h2 class="text-xl font-bold text-gray-900">Document Collection</h2>
+                    <p class="text-gray-600">Take before and after photos</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Before Photo -->
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" id="beforePhotoSection">
+                        <div class="text-gray-400 mb-2">📷 Before Photo</div>
+                        <input type="file" id="beforePhotoInput" accept="image/*" capture="environment" class="hidden">
+                        <button id="beforePhotoBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Take Before Photo
+                        </button>
+                        <div id="beforePhotoPreview" class="hidden mt-3">
+                            <img id="beforePhotoImg" class="w-full h-32 object-cover rounded-lg">
+                            <div class="text-sm text-green-600 mt-2">✅ Before photo captured</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Collection Timer -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                        <div class="text-yellow-800 font-medium mb-2">⏱️ Collection in Progress</div>
+                        <div class="text-2xl font-bold text-yellow-600" id="collectionTimer">00:00</div>
+                        <button id="startTimerBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg mt-2">
+                            Start Collection
+                        </button>
+                    </div>
+                    
+                    <!-- After Photo -->
+                    <div class="border-2 border-dashed border-green-300 rounded-lg p-4 text-center" id="afterPhotoSection">
+                        <div class="text-green-600 mb-2">✅ After Photo</div>
+                        <input type="file" id="afterPhotoInput" accept="image/*" capture="environment" class="hidden">
+                        <button id="afterPhotoBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg" disabled>
+                            Take After Photo
+                        </button>
+                        <div id="afterPhotoPreview" class="hidden mt-3">
+                            <img id="afterPhotoImg" class="w-full h-32 object-cover rounded-lg">
+                            <div class="text-sm text-green-600 mt-2">✅ After photo captured</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Photo Comparison -->
+                    <div id="photoComparison" class="hidden bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3">📋 Before & After Comparison</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-2">Before</div>
+                                <img id="beforeCompareImg" class="w-full h-24 object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-2">After</div>
+                                <img id="afterCompareImg" class="w-full h-24 object-cover rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3 pt-4">
+                        <button id="cancelJobBtn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg">
+                            Cancel
+                        </button>
+                        <button id="submitJobBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg" disabled>
+                            Complete Job ✅
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mapbox GL JS -->
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+
+<!-- JavaScript -->
+<script>
+// Global variables
+let map = null;
+let currentRoute = null;
+let routeProgress = 0;
+let journeyStartTime = Date.now();
+let collectionTimer = null;
+let jobData = null;
+let userLocation = null;
+let beforePhotoData = null;
+let afterPhotoData = null;
+
+// Mapbox access token
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2FrZXRoMjQyMSIsImEiOiJjbWVkYnFuY2gwOTE4MmtzZ3VhcGNsNWVjIn0.vJsyUnbBKBs9S1ZOO8kHKg';
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Enhanced active route loaded');
+    
+    // Initialize everything
+    initializePage();
+    
+    // Event listeners
+    setupEventListeners();
+});
+
+async function initializePage() {
+    try {
+        // Get user location and job data
+        await getUserLocation();
+        await getJobData();
+        
+        // Initialize map
+        initializeMap();
+        
+        // Start elapsed timer
+        startElapsedTimer();
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('Failed to initialize page', 'error');
+    }
+}
+
+function setupEventListeners() {
+    // Movement controls
+    document.getElementById('moveWorkerBtn').addEventListener('click', moveWorkerAlongRoute);
+    document.getElementById('completeJobBtn').addEventListener('click', showPhotoModal);
+    
+    // Photo modal controls
+    document.getElementById('beforePhotoBtn').addEventListener('click', () => capturePhoto('before'));
+    document.getElementById('afterPhotoBtn').addEventListener('click', () => capturePhoto('after'));
+    document.getElementById('startTimerBtn').addEventListener('click', startCollectionTimer);
+    document.getElementById('cancelJobBtn').addEventListener('click', closePhotoModal);
+    document.getElementById('submitJobBtn').addEventListener('click', submitJobCompletion);
+    
+    // File inputs
+    document.getElementById('beforePhotoInput').addEventListener('change', (e) => handlePhotoUpload(e, 'before'));
+    document.getElementById('afterPhotoInput').addEventListener('change', (e) => handlePhotoUpload(e, 'after'));
+}
+
+async function getUserLocation() {
+    try {
+        // Try to get real user location from backend
+        const response = await fetch('/worker/api/current-location');
+        if (response.ok) {
+            const data = await response.json();
+            userLocation = {
+                lat: data.latitude,
+                lng: data.longitude,
+                address: data.address
+            };
+            console.log('✅ Got user location from backend:', userLocation);
+        } else {
+            throw new Error('Backend location not available');
+        }
+    } catch (error) {
+        console.log('⚠️ Using GPS fallback for user location');
+        
+        // Fallback to browser geolocation
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                // Ultimate fallback to Vijayawada
+                userLocation = { lat: 16.5062, lng: 80.6480, address: "Vijayawada, AP" };
+                resolve();
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        address: "Current Location"
+                    };
+                    console.log('✅ Got GPS location:', userLocation);
+                    resolve();
+                },
+                (error) => {
+                    console.log('⚠️ GPS failed, using default location');
+                    userLocation = { lat: 16.5062, lng: 80.6480, address: "Vijayawada, AP" };
+                    resolve();
+                }
+            );
+        });
+    }
+}
+
+async function getJobData() {
+    try {
+        // Try to get active job from backend
+        const response = await fetch('/worker/api/active-job');
+        if (response.ok) {
+            jobData = await response.json();
+            console.log('✅ Got job data from backend:', jobData);
+        } else {
+            throw new Error('No active job found');
+        }
+    } catch (error) {
+        console.log('⚠️ Using demo job data');
+        
+        // Demo job data
+        jobData = {
+            id: "JOB_DEMO_001",
+            title: "School Gate Bin Collection", 
+            location: {
+                lat: userLocation.lat + 0.005,
+                lng: userLocation.lng + 0.005,
+                address: "Government School, Yanamalakuduru"
+            },
+            description: "Collect and sort waste from school entrance bins. Mixed waste reported by school administration.",
+            earnings: 150,
+            duration: 30,
+            priority: "medium",
+            reporter: "School Administrator",
+            type: "Bin Collection"
+        };
+    }
+    
+    // Update UI with job data
+    updateJobDetails();
+}
+
+function updateJobDetails() {
+    document.getElementById('jobEarnings').textContent = jobData.earnings;
+    document.getElementById('jobEarningsDisplay').textContent = `₹${jobData.earnings}`;
+    document.getElementById('jobTitle').textContent = jobData.title;
+    document.getElementById('jobLocation').textContent = jobData.location.address;
+    document.getElementById('jobDescription').textContent = jobData.description;
+    document.getElementById('jobDuration').textContent = `${jobData.duration}min`;
+    document.getElementById('jobType').textContent = jobData.type;
+    document.getElementById('jobPriority').textContent = jobData.priority;
+    document.getElementById('jobReporter').textContent = jobData.reporter;
+    document.getElementById('jobStatus').textContent = "Ready to Start";
+    
+    // Calculate distance
+    const distance = calculateDistance(userLocation, jobData.location);
+    document.getElementById('distanceToJob').textContent = `${distance.toFixed(1)} km`;
+    document.getElementById('timeRemaining').textContent = `${Math.ceil(distance * 15)} min`;
+}
+
+function initializeMap() {
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 14
+    });
+
+    map.on('load', function() {
+        console.log('🗺️ Map loaded successfully');
+        
+        // Hide loading state
+        document.getElementById('mapLoading').style.display = 'none';
+        
+        // Get route from Mapbox Directions API
+        getRoute();
+        
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        console.log('✅ Map initialization complete');
+    });
+}
+
+async function getRoute() {
+    console.log('🗺️ Calculating route...');
+    console.log('📍 From:', [userLocation.lng, userLocation.lat]);
+    console.log('🎯 To:', [jobData.location.lng, jobData.location.lat]);
+    
+    try {
+        const directionsRequest = `https://api.mapbox.com/directions/v5/mapbox/walking/${userLocation.lng},${userLocation.lat};${jobData.location.lng},${jobData.location.lat}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;
+        
+        console.log('🌐 Directions API URL:', directionsRequest);
+        
+        const response = await fetch(directionsRequest);
+        const data = await response.json();
+        
+        console.log('📊 Directions API response:', data);
+        
+        if (data.routes && data.routes.length > 0) {
+            currentRoute = data.routes[0];
+            console.log('✅ Route calculated successfully');
+            console.log('📏 Distance:', currentRoute.distance, 'meters');
+            console.log('⏱️ Duration:', currentRoute.duration, 'seconds');
+            console.log('📊 Coordinates:', currentRoute.geometry.coordinates.length, 'points');
+            
+            drawRoute(currentRoute.geometry);
+            
+            // Update navigation instruction
+            if (currentRoute.legs[0].steps[0]) {
+                const firstStep = currentRoute.legs[0].steps[0];
+                document.getElementById('navigationInstruction').textContent = firstStep.maneuver.instruction;
+                document.getElementById('nextInstruction').textContent = `Distance: ${(currentRoute.distance / 1000).toFixed(1)}km • Duration: ${Math.round(currentRoute.duration / 60)}min`;
+            }
+            
+        } else {
+            throw new Error('No routes found in response');
+        }
+    } catch (error) {
+        console.error('❌ Route calculation failed:', error);
+        // Draw simple straight line as fallback
+        drawStraightLine();
+    }
+}
+
+function drawRoute(geometry) {
+    // Add route source (full route in blue)
+    map.addSource('route', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': geometry
+        }
+    });
+    
+    // Add completed route source (empty initially)
+    map.addSource('completed-route', {
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': []
+            }
+        }
+    });
+    
+    // Add full route layer (blue - remaining route)
+    map.addLayer({
+        'id': 'route',
+        'type': 'line',
+        'source': 'route',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#3b82f6',
+            'line-width': 5,
+            'line-opacity': 0.8
+        }
+    });
+    
+    // Add completed route layer (green - traveled distance)
+    map.addLayer({
+        'id': 'completed-route',
+        'type': 'line',
+        'source': 'completed-route',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#10b981',
+            'line-width': 6,
+            'line-opacity': 0.9
+        }
+    });
+    
+    // Fit map to show both points
+    const bounds = new mapboxgl.LngLatBounds();
+    bounds.extend([userLocation.lng, userLocation.lat]);
+    bounds.extend([jobData.location.lng, jobData.location.lat]);
+    map.fitBounds(bounds, { padding: 50 });
+}
+
+function drawStraightLine() {
+    const lineGeometry = {
+        'type': 'LineString',
+        'coordinates': [
+            [userLocation.lng, userLocation.lat],
+            [jobData.location.lng, jobData.location.lat]
+        ]
+    };
+    drawRoute(lineGeometry);
+}
+
+function moveWorkerAlongRoute() {
+    const moveBtn = document.getElementById('moveWorkerBtn');
+    const completeBtn = document.getElementById('completeJobBtn');
+    
+    console.log(`🚶‍♂️ MOVE BUTTON PRESSED - Current progress: ${routeProgress}%`);
+    
+    if (routeProgress >= 100) {
+        showNotification('Already arrived at destination!', 'info');
+        return;
+    }
+    
+    // Disable button during movement
+    moveBtn.disabled = true;
+    moveBtn.innerHTML = '<span>🚶‍♂️</span><span>Moving...</span>';
+    
+    // Move worker 20% along the route
+    const oldProgress = routeProgress;
+    routeProgress = Math.min(routeProgress + 20, 100);
+    console.log(`📊 Progress: ${oldProgress}% → ${routeProgress}%`);
+    
+    // Update the completed route line
+    updateCompletedRoute();
+    
+    // Animate progress update
+    setTimeout(() => {
+        // Update progress
+        document.getElementById('progressPercentage').textContent = `${routeProgress}%`;
+        document.getElementById('progressBar').style.width = `${routeProgress}%`;
+        document.getElementById('routeProgress').textContent = `${routeProgress}%`;
+        
+        // Update distance
+        const newPosition = getPositionAlongRoute(routeProgress / 100);
+        const remainingDistance = calculateDistance(newPosition, jobData.location);
+        document.getElementById('distanceToJob').textContent = `${remainingDistance.toFixed(1)} km`;
+        
+        // Update status
+        if (routeProgress >= 100) {
+            document.getElementById('movementStatus').textContent = 'Arrived at destination!';
+            document.getElementById('jobStatus').textContent = 'Ready to Collect';
+            document.getElementById('navigationInstruction').textContent = 'You have arrived at the job location';
+            document.getElementById('nextInstruction').textContent = 'Ready to start waste collection';
+            
+            moveBtn.classList.add('hidden');
+            completeBtn.classList.remove('hidden');
+            
+            showNotification('🎯 Arrived at job location! Ready to start collection.', 'success');
+        } else {
+            document.getElementById('movementStatus').textContent = `${routeProgress}% complete - continuing journey`;
+            moveBtn.disabled = false;
+            moveBtn.innerHTML = '<span>🚶‍♂️</span><span>Continue Journey</span>';
+            
+            showNotification(`📍 ${routeProgress}% progress - continue moving along route`, 'info');
+        }
+    }, 1000);
+}
+
+function updateCompletedRoute() {
+    if (!currentRoute || !currentRoute.geometry) return;
+    
+    const routeCoords = currentRoute.geometry.coordinates;
+    const totalPoints = routeCoords.length;
+    
+    // Calculate how many points to include based on progress
+    const completedPoints = Math.floor((routeProgress / 100) * totalPoints);
+    
+    // Get the completed portion of coordinates
+    const completedCoords = routeCoords.slice(0, Math.max(1, completedPoints));
+    
+    // If we have partial progress, interpolate the exact position
+    if (completedPoints < totalPoints && routeProgress > 0) {
+        const exactPosition = getPositionAlongRoute(routeProgress / 100);
+        completedCoords.push([exactPosition.lng, exactPosition.lat]);
+    }
+    
+    // Update the completed route source
+    map.getSource('completed-route').setData({
+        'type': 'Feature',
+        'properties': {},
+        'geometry': {
+            'type': 'LineString',
+            'coordinates': completedCoords
+        }
+    });
+    
+    console.log(`✅ Updated completed route: ${completedCoords.length} points (${routeProgress}% complete)`);
+}
+
+function getPositionAlongRoute(progress) {
+    // If we have the actual route from Mapbox, follow it exactly
+    if (currentRoute && currentRoute.geometry && currentRoute.geometry.coordinates) {
+        const coords = currentRoute.geometry.coordinates;
+        const totalPoints = coords.length;
+        
+        // Calculate which segment of the route we're on
+        const targetIndex = progress * (totalPoints - 1);
+        const lowerIndex = Math.floor(targetIndex);
+        const upperIndex = Math.min(Math.ceil(targetIndex), totalPoints - 1);
+        
+        // If we're exactly on a point
+        if (lowerIndex === upperIndex) {
+            return {
+                lng: coords[lowerIndex][0],
+                lat: coords[lowerIndex][1]
+            };
+        }
+        
+        // Interpolate between two points on the route
+        const segmentProgress = targetIndex - lowerIndex;
+        const lowerPoint = coords[lowerIndex];
+        const upperPoint = coords[upperIndex];
+        
+        return {
+            lng: lowerPoint[0] + (upperPoint[0] - lowerPoint[0]) * segmentProgress,
+            lat: lowerPoint[1] + (upperPoint[1] - lowerPoint[1]) * segmentProgress
+        };
+    }
+    
+    // Fallback to linear interpolation if no route data
+    return {
+        lat: userLocation.lat + (jobData.location.lat - userLocation.lat) * progress,
+        lng: userLocation.lng + (jobData.location.lng - userLocation.lng) * progress
+    };
+}
+
+function calculateDistance(pos1, pos2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (pos2.lat - pos1.lat) * Math.PI / 180;
+    const dLng = (pos2.lng - pos1.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(pos1.lat * Math.PI / 180) * Math.cos(pos2.lat * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function showPhotoModal() {
+    document.getElementById('photoModal').classList.remove('hidden');
+    // Reset modal state
+    resetPhotoModal();
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').classList.add('hidden');
+    if (collectionTimer) {
+        clearInterval(collectionTimer);
+        collectionTimer = null;
+    }
+}
+
+function resetPhotoModal() {
+    // Reset all photo states
+    beforePhotoData = null;
+    afterPhotoData = null;
+    
+    // Reset UI
+    document.getElementById('beforePhotoPreview').classList.add('hidden');
+    document.getElementById('afterPhotoPreview').classList.add('hidden');
+    document.getElementById('photoComparison').classList.add('hidden');
+    document.getElementById('afterPhotoBtn').disabled = true;
+    document.getElementById('submitJobBtn').disabled = true;
+    document.getElementById('collectionTimer').textContent = '00:00';
+    
+    // Reset timer button
+    const timerBtn = document.getElementById('startTimerBtn');
+    timerBtn.textContent = 'Start Collection';
+    timerBtn.disabled = false;
+}
+
+function capturePhoto(type) {
+    const input = document.getElementById(`${type}PhotoInput`);
+    input.click();
+}
+
+function handlePhotoUpload(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageData = e.target.result;
+        
+        if (type === 'before') {
+            beforePhotoData = {
+                file: file,
+                data: imageData,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Update UI
+            document.getElementById('beforePhotoImg').src = imageData;
+            document.getElementById('beforePhotoPreview').classList.remove('hidden');
+            document.getElementById('afterPhotoBtn').disabled = false;
+            
+            showNotification('✅ Before photo captured successfully!', 'success');
+            
+        } else if (type === 'after') {
+            afterPhotoData = {
+                file: file,
+                data: imageData,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Update UI
+            document.getElementById('afterPhotoImg').src = imageData;
+            document.getElementById('afterPhotoPreview').classList.remove('hidden');
+            
+            // Show comparison
+            showPhotoComparison();
+            
+            // Enable submit button
+            document.getElementById('submitJobBtn').disabled = false;
+            
+            showNotification('✅ After photo captured successfully!', 'success');
+        }
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function showPhotoComparison() {
+    const comparisonDiv = document.getElementById('photoComparison');
+    document.getElementById('beforeCompareImg').src = beforePhotoData.data;
+    document.getElementById('afterCompareImg').src = afterPhotoData.data;
+    comparisonDiv.classList.remove('hidden');
+}
+
+function startCollectionTimer() {
+    if (collectionTimer) return;
+    
+    const timerBtn = document.getElementById('startTimerBtn');
+    timerBtn.textContent = 'Collection Active';
+    timerBtn.disabled = true;
+    
+    let seconds = 0;
+    collectionTimer = setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        document.getElementById('collectionTimer').textContent = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
+    
+    showNotification('⏱️ Collection timer started', 'info');
+}
+
+async function submitJobCompletion() {
+    if (!beforePhotoData || !afterPhotoData) {
+        showNotification('Please take both before and after photos', 'error');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submitJobBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('jobId', jobData.id);
+        formData.append('beforePhoto', beforePhotoData.file);
+        formData.append('afterPhoto', afterPhotoData.file);
+        formData.append('beforeTimestamp', beforePhotoData.timestamp);
+        formData.append('afterTimestamp', afterPhotoData.timestamp);
+        formData.append('completionTime', new Date().toISOString());
+        formData.append('workerId', 'current_worker'); // This would come from session
+        
+        // Submit to backend
+        const response = await fetch('/worker/api/complete-job', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showNotification('🎉 Job completed successfully!', 'success');
+            
+            // Show completion summary
+            setTimeout(() => {
+                showJobCompletion(result);
+            }, 1000);
+            
+        } else {
+            throw new Error('Failed to submit job completion');
+        }
+        
+    } catch (error) {
+        console.error('Job submission error:', error);
+        showNotification('❌ Failed to submit job. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete Job ✅';
+    }
+}
+
+function showJobCompletion(result) {
+    const completionMessage = `
+        🎉 JOB COMPLETED SUCCESSFULLY! 🎉
+        
+        ✅ Job: ${jobData.title}
+        💰 Earnings: ₹${jobData.earnings}
+        ⏱️ Time Taken: ${Math.floor((Date.now() - journeyStartTime) / 60000)} minutes
+        📸 Photos: Before & After documented
+        
+        🏆 Great work! Payment will be processed shortly.
+    `;
+    
+    alert(completionMessage);
+    
+    // Redirect to earnings or dashboard
+    setTimeout(() => {
+        window.location.href = '/worker/earnings';
+    }, 2000);
+}
+
+function startElapsedTimer() {
+    setInterval(() => {
+        const elapsed = Date.now() - journeyStartTime;
+        const minutes = Math.floor(elapsed / 60000);
+        document.getElementById('timeElapsed').textContent = `${minutes} min`;
+    }, 60000); // Update every minute
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full max-w-sm notification`;
+    
+    switch (type) {
+        case 'success':
+            notification.classList.add('bg-green-500', 'text-white');
+            break;
+        case 'error':
+            notification.classList.add('bg-red-500', 'text-white');
+            break;
+        case 'warning':
+            notification.classList.add('bg-yellow-500', 'text-white');
+            break;
+        default:
+            notification.classList.add('bg-blue-500', 'text-white');
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
+}
+
+// Prevent accidental page reload during active job
+window.addEventListener('beforeunload', function(e) {
+    if (routeProgress > 0 && routeProgress < 100) {
+        e.preventDefault();
+        e.returnValue = 'Your job is still in progress. Are you sure you want to leave?';
+    }
+});
+</script>
+
+<!-- Custom Styles -->
+<style>
+/* Progress bar animation */
+#progressBar {
+    transition: width 1s ease-in-out;
+}
+
+/* Button effects */
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .grid.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    #map {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid.md\\:grid-cols-2.lg\\:grid-cols-4 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Loading animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Map container styling */
+#map {
+    border-radius: 0;
+}
+
+/* Custom button loading states */
+.btn-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-loading::after {
+    content: "...";
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ""; }
+    40% { content: "."; }
+    60% { content: ".."; }
+    80%, 100% { content: "..."; }
+}
+
+/* Collection timer highlight */
+#collectionTimer {
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.05); 
+        opacity: 0.8;
+    }
+}
+
+/* Modal animations */
+#photoModal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+#photoModal.hidden {
+    animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+/* Notification animations */
+.notification {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+</style>
+
+{% endblock %}
